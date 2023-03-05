@@ -17,6 +17,8 @@ struct Exit {
 };
 
 struct Room {
+   char* title;
+   char* description;
    int n_exits;
    int n_activities;
    struct Exit* exits[10];
