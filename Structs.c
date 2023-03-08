@@ -2,8 +2,8 @@
 #define STRUCTS_INCLUDED
 
 struct Activity {
-   char* title;
-   char* description;
+   char title[128];
+   char description[128];
    int n_exits;
    int n_activities;
    struct Exit* exits[10];
@@ -11,14 +11,14 @@ struct Activity {
 };
 
 struct Exit {
-   char* title;
-   char* description;
+   char title[128];
+   char description[128];
    struct Room* room;
 };
 
 struct Room {
-   char* title;
-   char* description;
+   char title[128];
+   char description[128];
    int n_exits;
    int n_activities;
    struct Exit* exits[10];

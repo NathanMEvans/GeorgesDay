@@ -10,7 +10,7 @@
 struct Exit* showRoom(struct Exit* exit) {
    struct Room* room = exit->room;
    char* intro = exit->description;
-   clear();
+   //clear();
    char* input = malloc(sizeof(char)*10);
    int inputI = 0;
    while (1) {
@@ -46,12 +46,14 @@ struct Exit* showRoom(struct Exit* exit) {
          input[strlen (input) - 1] = '\0';
       }
       sscanf(input, "%d", &inputI);
-      clear();
+     // clear();
    }
 }
 
 int main() {
+   printf("TEST\n\n\n");
    struct Exit nextExit = generateMap();
+   printf("nextExit Description: %s\n", nextExit.description);
    while (1) {
       nextExit = *showRoom(&nextExit);
    }
