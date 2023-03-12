@@ -5,12 +5,11 @@
 #include <string.h>
 
 #define MAX_LINE_LENGTH 1000
-#define N_ROOMS 3
-#define N_ACTIVITIES 3
-#define N_EXITS 4
+#define N_ROOMS 6
+#define N_ACTIVITIES 7
+#define N_EXITS 7
 
 struct Exit generateMap() {
-   printf("HERE0\n");
    
    char line[MAX_LINE_LENGTH];
    char delim[2] = ",";
@@ -33,7 +32,6 @@ struct Exit generateMap() {
      rooms[i] = newRoom;
    }  
    fclose(roomcsv);
-   printf("HERE1\n");
    
    // create activities
    static struct Activity activities[N_ACTIVITIES];
@@ -53,7 +51,6 @@ struct Exit generateMap() {
      activities[i] = newActivity;
    } 
    fclose(activitycsv);
-   printf("HERE2\n");
    
    // create exits
    static struct Exit exits[N_EXITS];
@@ -64,20 +61,17 @@ struct Exit generateMap() {
    for (int i=0;i<N_EXITS;i++) {
      fgets(line,MAX_LINE_LENGTH,exitcsv);
      struct Exit newExit = {"",""};
-     exits[i] = newExit;
      // ID do nothing
      strtok(line,delim);
      strcpy(newExit.title, strtok(NULL,delim));
      strcpy(newExit.description, strtok(NULL,delim));
-     printf("desc %s\n",newExit.description);
-     printf("title %s\n",newExit.title);
      int roomID = 0;
      sscanf(strtok(NULL,delim), "%d", &roomID);
      newExit.room = &rooms[roomID];
+     printf("newExit Title: %s\n", newExit.title);
      exits[i] = newExit;
    }
    fclose(exitcsv);
-   printf("HERE3\n");
    
    // add exits to rooms
    FILE* roomExitcsv = fopen("Map/RoomExits-RoomExits.csv", "r");
@@ -86,7 +80,6 @@ struct Exit generateMap() {
       strtok(line,delim); // ID do nothing
       int roomID = 0;
       sscanf(strtok(NULL,delim), "%d", &roomID);
-      printf("room ID for exit: %d",roomID);
       int exitID = 0;
       sscanf(strtok(NULL,delim), "%d", &exitID);
       rooms[roomID].exits[rooms[roomID].n_exits] = &exits[exitID];
@@ -117,13 +110,26 @@ struct Exit generateMap() {
       sscanf(strtok(NULL,delim), "%d", &roomID);
       int activityID = 0;
       sscanf(strtok(NULL,delim), "%d", &activityID);
-      printf("activity: %d title: %s\n",activityID,activities[activityID].title);
       rooms[roomID].activities[rooms[roomID].n_activities] = &activities[activityID];
       rooms[roomID].n_activities++;
    }
    fclose(roomActivitycsv);
- 
-   printf("HERE\n"); 
-   printf("in func description: %s\n",exits[0].description);
+
+   // add activities to rooms
+   FILE* activityActivitycsv = fopen("Map/ActivityActivities-ActivityActivities.csv", "r");
+   fgets(line,MAX_LINE_LENGTH,activityActivitycsv); // Collumn headers do nothing
+
+   while(fgets(line,MAX_LINE_LENGTH,activityActivitycsv)) {
+      strtok(line,delim); // ID do nothing
+      int activityID1 = 0;
+      sscanf(strtok(NULL,delim), "%d", &activityID1);
+      int activityID2 = 0;
+      sscanf(strtok(NULL,delim), "%d", &activityID2);
+
+      activities[activityID1].activities[activities[activityID1].n_activities] = &activities[activityID2];
+      activities[activityID1].n_activities++;
+   }
+   fclose(activityActivitycsv);
+
    return exits[0];
 }
