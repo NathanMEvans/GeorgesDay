@@ -8,8 +8,9 @@
 #define N_ROOMS 6
 #define N_ACTIVITIES 7
 #define N_EXITS 7
+#define N_TODOS 4
 
-struct Exit generateMap() {
+struct Exit generateMap(struct Todo* todos) {
    
    char line[MAX_LINE_LENGTH];
    char delim[2] = ",";
@@ -42,7 +43,7 @@ struct Exit generateMap() {
 
    for (int i=0;i<N_ACTIVITIES;i++) {
      fgets(line,MAX_LINE_LENGTH,activitycsv);
-     struct Activity newActivity = {"","",0,0,{},{}};
+     struct Activity newActivity = {"","",0,0,{},{},NULL};
 
      // ID do nothing
      strtok(line,delim);
@@ -73,6 +74,26 @@ struct Exit generateMap() {
    }
    fclose(exitcsv);
    
+   // create TODOS
+   //static struct Todo todos[N_TODOS];
+   FILE* todocsv;
+   todocsv = fopen("Map/Todo-Todo.csv", "r");
+   fgets(line,MAX_LINE_LENGTH,todocsv); // Collumn headers do nothing
+   for (int i=0;i<N_TODOS;i++) {
+      fgets(line,MAX_LINE_LENGTH,todocsv);
+      printf("HERE\n\n");
+      printf("test %s\n",todos[i].title);
+      printf("HERE2\n\n");
+      strtok(line,delim); // ID do nothing
+      strcpy(todos[i].title, strtok(NULL,delim));
+      todos[i].complete = 0;
+      int activityID = 0;
+      sscanf(strtok(NULL,delim), "%d", &activityID);
+      //todos[i] = &newTodo;
+      activities[activityID].todo = &todos[i];
+      printf("new TODO title: %s\n", todos[i].title);
+   }
+ 
    // add exits to rooms
    FILE* roomExitcsv = fopen("Map/RoomExits-RoomExits.csv", "r");
    fgets(line,MAX_LINE_LENGTH,roomExitcsv); // Collumn headers do nothing
@@ -130,6 +151,6 @@ struct Exit generateMap() {
       activities[activityID1].n_activities++;
    }
    fclose(activityActivitycsv);
-
+   
    return exits[0];
 }

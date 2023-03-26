@@ -8,6 +8,7 @@ struct Activity {
    int n_activities;
    struct Exit* exits[10];
    struct Activity* activities[10];
+   struct Todo* todo;
 };
 
 struct Exit {
@@ -25,4 +26,8 @@ struct Room {
    struct Activity* activities[10];
 };
 
+struct Todo {
+   char title[128];
+   int complete;
+};
 #endif
