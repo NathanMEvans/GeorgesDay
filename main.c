@@ -12,12 +12,9 @@
 #define clear() printf("\033[H\033[J")
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
-#define N_TODOS 4
+#define NOTODO 255
 
-char* intro;
-int inputI;
-struct Room* room;
-static struct Todo todos[N_TODOS];
+struct Game game;
 	
 void borderLine(int x, int y, int width, char capl[4], char capr[4]) {
    gotoxy(x,y);
@@ -109,13 +106,23 @@ printf(
    //}
 }
 
-void options(struct Room* room, char* intro, int inputI) {
+void showOptions(struct Room* room, char* message) {
       gotoxy(1,11);
       printf("%4s%s: %s\n", "", room->title, room->description);
-      if (inputI > 0) {
-         if (inputI <= room->n_activities) {
-            struct Activity* activity = room->activities[inputI-1];
-            printf("%4s%s\n\n","", activity->description);
+      printf("%4s%s\n\n","", message);
+      for (int i = 0; i < room->n_activities; i++) {
+         printf("%5d: %s\n",i+1,game.activities[room->activities[i]].title);
+      }
+      for (int i = 0; i < room->n_exits; i++) {
+         printf("%5d: %s\n",i+room->n_activities+1,game.exits[room->exits[i]].title);
+      }
+}
+
+void handleInput(struct Room* room, int inputI) {
+    if (inputI > 0) {
+        if (inputI <= room->n_activities) {
+            struct Activity* activity = &game.activities[room->activities[inputI-1]];
+            strcpy(game.lastMessage, activity->description);
             for  (int i = 0; i < activity->n_activities; i++) {
                room->activities[room->n_activities+i] = activity->activities[i];
                room->n_activities++;
@@ -124,49 +131,41 @@ void options(struct Room* room, char* intro, int inputI) {
                room->exits[room->n_exits+i] = activity->exits[i];
                room->n_exits++;
             }
-            if (activity->todo != NULL) {
-               activity->todo->complete = 1;
+            if (activity->todo != NOTODO) {
+               game.todos[activity->todo].complete = 1;
             }
             // Remove activity from array
             room->activities[inputI-1] = room->activities[--room->n_activities];
-         }
-      } else {
-          printf("%4s%s\n\n","", intro);
-      }
-      for (int i = 0; i < room->n_activities; i++) {
-         printf("%5d: %s\n",i+1,room->activities[i]->title);
-      }
-      for (int i = 0; i < room->n_exits; i++) {
-         printf("%5d: %s\n",i+room->n_activities+1,room->exits[i]->title);
-      }
+        }
+    }
 }
-
 void drawTodos() {
    struct winsize w;
    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
    int divx = 2*w.ws_col/3;
    gotoxy(w.ws_col-(divx/4)-3,11);
    printf("TODO");  
-   for (int i=0; i<N_TODOS; i++) {
+   for (int i=0; i<game.n_todos; i++) {
       gotoxy(divx+2,12+i);
-      if (todos[i].complete) {
+      if (game.todos[i].complete) {
          printf("☒");
       } else {
          printf("□");
       }
-      printf(" %s\n",todos[i].title);
+      printf(" %s\n",game.todos[i].title);
    }
  
 }
 struct Exit* showRoom(struct Exit* exit) {
    printf("NEW ROOM\n");
-   room = exit->room;
-   intro = exit->description;
+   game.currentRoom = exit->room;
+   strcpy(game.lastMessage, exit->description);
+   struct Room* room = &game.rooms[game.currentRoom];
    char* input = malloc(sizeof(char)*10);
-   inputI = 0;
+   int inputI = 0;
    while (1) {
       header();
-      options(room, intro, inputI);
+      showOptions(room, game.lastMessage);
       drawTodos();
       border();
       gotoxy(5,22);
@@ -176,9 +175,10 @@ struct Exit* showRoom(struct Exit* exit) {
       }
       sscanf(input, "%d", &inputI);
       if (inputI > room->n_activities) {
-         struct Exit* selectedExit = room->exits[inputI-1-room->n_activities];
+         struct Exit* selectedExit = &game.exits[room->exits[inputI-1-room->n_activities]];
          return selectedExit;
       }
+      handleInput(room, inputI);
    }
 }
 
@@ -186,7 +186,8 @@ static void sig_handler(int sig)
 {
   if (SIGWINCH == sig) {
     header();
-    options(room, intro, inputI);
+    struct Room* room = &game.rooms[game.currentRoom];
+    showOptions(room, game.lastMessage);
     drawTodos();
     border();
        
@@ -205,10 +206,11 @@ int main() {
    //  todos[i] = todo;
    //}
   
-   struct Exit nextExit = generateMap(&todos);
+   game = generateMap();
+   struct Exit* nextExit = &game.exits[0];
    //return 0; 
    while (1) {
-      nextExit = *showRoom(&nextExit);
+      nextExit = showRoom(nextExit);
    }
 }
 

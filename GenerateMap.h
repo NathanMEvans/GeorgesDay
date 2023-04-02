@@ -3,6 +3,6 @@
 
 #include "Structs.c"
 
-struct Exit generateMap();
+struct Game generateMap();
 
 #endif

@@ -5,93 +5,66 @@
 #include <string.h>
 
 #define MAX_LINE_LENGTH 1000
-#define N_ROOMS 6
-#define N_ACTIVITIES 7
-#define N_EXITS 7
-#define N_TODOS 4
+#define NOTODO 255
 
-struct Exit generateMap(struct Todo* todos) {
-   
+struct Game generateMap() {
+   struct Game game = {{}, 0, {}, 0, {}, 0, {}, 0, "", 0 };
    char line[MAX_LINE_LENGTH];
    char delim[2] = ",";
    
    // create rooms
-   static struct Room rooms[N_ROOMS];
    FILE* roomcsv;
    roomcsv = fopen("Map/Rooms-Rooms.csv", "r");
-   // Collumn headers do nothing
-   fgets(line,MAX_LINE_LENGTH,roomcsv);
-
-   for (int i=0;i<N_ROOMS;i++) {
-     fgets(line,MAX_LINE_LENGTH,roomcsv);
+   fgets(line,MAX_LINE_LENGTH,roomcsv); // Collumn headers do nothing
+   while(fgets(line,MAX_LINE_LENGTH,roomcsv)) {
      struct Room newRoom = {"","",0,0,{},{}};
-
-     // ID do nothing
-     strtok(line,delim);
+     strtok(line,delim); // ID do nothing
      strcpy(newRoom.title, strtok(NULL,delim));
      strcpy(newRoom.description, strtok(NULL,delim));
-     rooms[i] = newRoom;
+     game.rooms[game.n_rooms++] = newRoom;
    }  
    fclose(roomcsv);
    
    // create activities
-   static struct Activity activities[N_ACTIVITIES];
    FILE* activitycsv;
    activitycsv = fopen("Map/Actvities-Actvities.csv", "r");
-   // Collumn headers do nothing
-   fgets(line,MAX_LINE_LENGTH,activitycsv);
-
-   for (int i=0;i<N_ACTIVITIES;i++) {
-     fgets(line,MAX_LINE_LENGTH,activitycsv);
-     struct Activity newActivity = {"","",0,0,{},{},NULL};
-
-     // ID do nothing
-     strtok(line,delim);
+   fgets(line,MAX_LINE_LENGTH,activitycsv); // Collumn headers do nothing
+   while(fgets(line,MAX_LINE_LENGTH,activitycsv)) {
+     struct Activity newActivity = {"","",0,0,{},{},NOTODO};
+     strtok(line,delim); // ID do nothing
      strcpy(newActivity.title, strtok(NULL,delim));
      strcpy(newActivity.description, strtok(NULL,delim));
-     activities[i] = newActivity;
+     game.activities[game.n_activities++] = newActivity;
    } 
    fclose(activitycsv);
    
    // create exits
-   static struct Exit exits[N_EXITS];
    FILE* exitcsv;
    exitcsv = fopen("Map/Exits-Exits.csv", "r");
    fgets(line,MAX_LINE_LENGTH,exitcsv); // Collumn headers do nothing
-
-   for (int i=0;i<N_EXITS;i++) {
-     fgets(line,MAX_LINE_LENGTH,exitcsv);
-     struct Exit newExit = {"",""};
-     // ID do nothing
-     strtok(line,delim);
+   while(fgets(line,MAX_LINE_LENGTH,exitcsv)) {
+     struct Exit newExit = {"","", 0};
+     strtok(line,delim); // ID do nothing
      strcpy(newExit.title, strtok(NULL,delim));
      strcpy(newExit.description, strtok(NULL,delim));
-     int roomID = 0;
-     sscanf(strtok(NULL,delim), "%d", &roomID);
-     newExit.room = &rooms[roomID];
-     printf("newExit Title: %s\n", newExit.title);
-     exits[i] = newExit;
+     sscanf(strtok(NULL,delim), "%d", &newExit.room);
+     game.exits[game.n_exits++] = newExit;
    }
    fclose(exitcsv);
    
    // create TODOS
-   //static struct Todo todos[N_TODOS];
    FILE* todocsv;
    todocsv = fopen("Map/Todo-Todo.csv", "r");
    fgets(line,MAX_LINE_LENGTH,todocsv); // Collumn headers do nothing
-   for (int i=0;i<N_TODOS;i++) {
-      fgets(line,MAX_LINE_LENGTH,todocsv);
-      printf("HERE\n\n");
-      printf("test %s\n",todos[i].title);
-      printf("HERE2\n\n");
+   while(fgets(line,MAX_LINE_LENGTH,todocsv)) {
+      struct Todo todo = {"", 0};
       strtok(line,delim); // ID do nothing
-      strcpy(todos[i].title, strtok(NULL,delim));
-      todos[i].complete = 0;
+      strcpy(todo.title, strtok(NULL,delim));
+      todo.complete = 0;
       int activityID = 0;
       sscanf(strtok(NULL,delim), "%d", &activityID);
-      //todos[i] = &newTodo;
-      activities[activityID].todo = &todos[i];
-      printf("new TODO title: %s\n", todos[i].title);
+      game.activities[activityID].todo = game.n_todos;
+      game.todos[game.n_todos++] = todo;
    }
  
    // add exits to rooms
@@ -103,8 +76,8 @@ struct Exit generateMap(struct Todo* todos) {
       sscanf(strtok(NULL,delim), "%d", &roomID);
       int exitID = 0;
       sscanf(strtok(NULL,delim), "%d", &exitID);
-      rooms[roomID].exits[rooms[roomID].n_exits] = &exits[exitID];
-      rooms[roomID].n_exits++;
+      struct Room* room = &game.rooms[roomID];
+      room->exits[room->n_exits++] = exitID;
    }
    fclose(roomExitcsv);
    
@@ -117,8 +90,8 @@ struct Exit generateMap(struct Todo* todos) {
       sscanf(strtok(NULL,delim), "%d", &activityID);
       int exitID = 0;
       sscanf(strtok(NULL,delim), "%d", &exitID);
-      activities[activityID].exits[activities[activityID].n_exits] = &exits[exitID];
-      activities[activityID].n_exits++;
+      struct Activity* activity = &game.activities[activityID];
+      activity->exits[activity->n_exits++] = exitID;
    }
    fclose(activityExitcsv);
   
@@ -131,26 +104,24 @@ struct Exit generateMap(struct Todo* todos) {
       sscanf(strtok(NULL,delim), "%d", &roomID);
       int activityID = 0;
       sscanf(strtok(NULL,delim), "%d", &activityID);
-      rooms[roomID].activities[rooms[roomID].n_activities] = &activities[activityID];
-      rooms[roomID].n_activities++;
+      struct Room* room = &game.rooms[roomID];
+      room->activities[room->n_activities++] = activityID;
    }
    fclose(roomActivitycsv);
 
-   // add activities to rooms
+   // add activities to activities
    FILE* activityActivitycsv = fopen("Map/ActivityActivities-ActivityActivities.csv", "r");
    fgets(line,MAX_LINE_LENGTH,activityActivitycsv); // Collumn headers do nothing
-
    while(fgets(line,MAX_LINE_LENGTH,activityActivitycsv)) {
       strtok(line,delim); // ID do nothing
       int activityID1 = 0;
       sscanf(strtok(NULL,delim), "%d", &activityID1);
       int activityID2 = 0;
       sscanf(strtok(NULL,delim), "%d", &activityID2);
-
-      activities[activityID1].activities[activities[activityID1].n_activities] = &activities[activityID2];
-      activities[activityID1].n_activities++;
+      struct Activity* activity = &game.activities[activityID1];
+      activity->activities[activity->n_activities++] = activityID2;
    }
    fclose(activityActivitycsv);
    
-   return exits[0];
+   return game;
 }
