@@ -6,9 +6,10 @@
 
 #define MAX_LINE_LENGTH 1000
 #define NOTODO 255
+#define NO_HELD_ACTIVITY 255
 
 struct Game generateMap() {
-   struct Game game = {{}, 0, {}, 0, {}, 0, {}, 0, "", 0 };
+   struct Game game = {{}, 0, {}, 0, {}, 0, {}, 0, {}, 0, 0, NO_HELD_ACTIVITY };
    char line[MAX_LINE_LENGTH];
    char delim[2] = ",";
    
@@ -113,13 +114,15 @@ struct Game generateMap() {
    FILE* activityActivitycsv = fopen("Map/ActivityActivities-ActivityActivities.csv", "r");
    fgets(line,MAX_LINE_LENGTH,activityActivitycsv); // Collumn headers do nothing
    while(fgets(line,MAX_LINE_LENGTH,activityActivitycsv)) {
+      struct ActivityRoom actRoom;
       strtok(line,delim); // ID do nothing
       int activityID1 = 0;
       sscanf(strtok(NULL,delim), "%d", &activityID1);
       int activityID2 = 0;
-      sscanf(strtok(NULL,delim), "%d", &activityID2);
+      sscanf(strtok(NULL,delim), "%d", &actRoom.activity);
+      sscanf(strtok(NULL,delim), "%d", &actRoom.room);
       struct Activity* activity = &game.activities[activityID1];
-      activity->activities[activity->n_activities++] = activityID2;
+      activity->activities[activity->n_activities++] = actRoom;
    }
    fclose(activityActivitycsv);
    

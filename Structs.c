@@ -1,6 +1,10 @@
 #ifndef STRUCTS_INCLUDED
 #define STRUCTS_INCLUDED
 
+struct ActivityRoom {
+   int activity;
+   int room;
+};
 
 struct Activity {
    char title[128];
@@ -8,7 +12,7 @@ struct Activity {
    int n_exits;
    int n_activities;
    int exits[10];
-   int activities[10];
+   struct ActivityRoom activities[10];
    int todo;
 };
 
@@ -41,7 +45,9 @@ struct Game {
    int n_exits;
    struct Todo todos[256];
    int n_todos;
-   char lastMessage[128];
+   char messages[128][128];
+   int n_messages;
    int currentRoom;
+   int heldActivity;
 };
 #endif

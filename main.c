@@ -13,6 +13,9 @@
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
 #define NOTODO 255
+#define THIS_ROOM 255
+#define HELD_ACTIVITY 254
+#define NO_HELD_ACTIVITY 255
 
 struct Game game;
 	
@@ -111,31 +114,64 @@ void showOptions(struct Room* room, char* message) {
       printf("%4s%s: %s\n", "", room->title, room->description);
       printf("%4s%s\n\n","", message);
       for (int i = 0; i < room->n_activities; i++) {
-         printf("%5d: %s\n",i+1,game.activities[room->activities[i]].title);
+         struct Activity* activity = &game.activities[room->activities[i]];
+         printf("%5d activity: %s exits: %d activities: %d \n",i+1, activity->title, activity->n_exits, activity->n_activities);
       }
       for (int i = 0; i < room->n_exits; i++) {
-         printf("%5d: %s\n",i+room->n_activities+1,game.exits[room->exits[i]].title);
+         printf("%5d exit: %s\n",i+room->n_activities+1,game.exits[room->exits[i]].title);
       }
+      if (game.heldActivity != NO_HELD_ACTIVITY) {
+         printf("%5d held activity: %s\n",room->n_exits+room->n_activities+1,game.activities[game.heldActivity].title);
+      }
+}
+
+void selectActivity(struct Activity* activity) {
+    strcpy(game.messages[game.n_messages++], activity->description);
+    for  (int i = 0; i < activity->n_activities; i++) {
+        struct ActivityRoom actRoom = activity->activities[i];
+        if (actRoom.room == THIS_ROOM) {
+            struct Room* room = &game.rooms[game.currentRoom];
+            room->activities[room->n_activities++] = actRoom.activity;
+        } else if (actRoom.room == HELD_ACTIVITY) {
+            if (game.heldActivity != NO_HELD_ACTIVITY) {
+                struct Activity* oldHeldActivity = &game.activities[game.heldActivity];
+                game.heldActivity = NO_HELD_ACTIVITY;
+                selectActivity(oldHeldActivity); 
+            }
+            game.heldActivity = actRoom.activity;
+         } else {
+            struct Room* room = &game.rooms[actRoom.room];
+            room->activities[room->n_activities] = actRoom.activity;
+         }
+     }
+     // Exits currently placed in this room - might update this same as activities
+     struct Room* room = &game.rooms[game.currentRoom];
+     
+     for  (int i = 0; i < activity->n_exits; i++) {
+         room->exits[room->n_exits++] = activity->exits[i];
+     }
+     if (activity->todo != NOTODO) {
+        game.todos[activity->todo].complete = 1;
+     }
 }
 
 void handleInput(struct Room* room, int inputI) {
     if (inputI > 0) {
         if (inputI <= room->n_activities) {
             struct Activity* activity = &game.activities[room->activities[inputI-1]];
-            strcpy(game.lastMessage, activity->description);
-            for  (int i = 0; i < activity->n_activities; i++) {
-               room->activities[room->n_activities+i] = activity->activities[i];
-               room->n_activities++;
-            }
-            for  (int i = 0; i < activity->n_exits; i++) {
-               room->exits[room->n_exits+i] = activity->exits[i];
-               room->n_exits++;
-            }
-            if (activity->todo != NOTODO) {
-               game.todos[activity->todo].complete = 1;
-            }
+            selectActivity(activity);
             // Remove activity from array
             room->activities[inputI-1] = room->activities[--room->n_activities];
+        } else if (inputI <= room->n_activities + room->n_exits) {
+            struct Exit* selectedExit = &game.exits[room->exits[inputI-1-room->n_activities]];
+            game.currentRoom = selectedExit->room;
+            strcpy(game.messages[game.n_messages++], selectedExit->description);
+        } else if (inputI == room->n_activities + room->n_exits + 1) {
+            if (game.heldActivity != NO_HELD_ACTIVITY) {
+                struct Activity* oldHeldActivity = &game.activities[game.heldActivity];
+                game.heldActivity = NO_HELD_ACTIVITY;
+                selectActivity(oldHeldActivity);
+            } 
         }
     }
 }
@@ -157,15 +193,13 @@ void drawTodos() {
  
 }
 struct Exit* showRoom(struct Exit* exit) {
-   printf("NEW ROOM\n");
-   game.currentRoom = exit->room;
-   strcpy(game.lastMessage, exit->description);
    struct Room* room = &game.rooms[game.currentRoom];
    char* input = malloc(sizeof(char)*10);
    int inputI = 0;
    while (1) {
+      struct Room* room = &game.rooms[game.currentRoom];
       header();
-      showOptions(room, game.lastMessage);
+      showOptions(room, game.messages[game.n_messages-1]);
       drawTodos();
       border();
       gotoxy(5,22);
@@ -174,10 +208,6 @@ struct Exit* showRoom(struct Exit* exit) {
          input[strlen (input) - 1] = '\0';
       }
       sscanf(input, "%d", &inputI);
-      if (inputI > room->n_activities) {
-         struct Exit* selectedExit = &game.exits[room->exits[inputI-1-room->n_activities]];
-         return selectedExit;
-      }
       handleInput(room, inputI);
    }
 }
@@ -187,7 +217,7 @@ static void sig_handler(int sig)
   if (SIGWINCH == sig) {
     header();
     struct Room* room = &game.rooms[game.currentRoom];
-    showOptions(room, game.lastMessage);
+    showOptions(room, game.messages[game.n_messages-1]);
     drawTodos();
     border();
        
@@ -208,7 +238,8 @@ int main() {
   
    game = generateMap();
    struct Exit* nextExit = &game.exits[0];
-   //return 0; 
+   //return 0;
+   strcpy(game.messages[game.n_messages++], nextExit->description);
    while (1) {
       nextExit = showRoom(nextExit);
    }
