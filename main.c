@@ -68,7 +68,7 @@ void border() {
    //}
    borderLine(1, 10, divx, "╠", "╦");
    borderLine(1, 12, divx, "╠", "╣");
-   borderLine(1, 14, divx, "╠", "╣");
+   borderLine(1, 17, divx, "╠", "╣");
    borderLine(divx, 10, w.ws_col-divx, "╦", "╣");
 }
 
@@ -109,10 +109,17 @@ printf(
    //}
 }
 
-void showOptions(struct Room* room, char* message) {
+void showOptions(struct Room* room) {
       gotoxy(1,11);
       printf("%4s%s: %s\n", "", room->title, room->description);
-      printf("%4s%s\n\n","", message);
+      for (int i=0; i<4; i++) {
+          if (game.n_messages-4+i < 0) {
+             continue;
+          }
+          char* message = game.messages[game.n_messages-4+i];
+         printf("%4s%s\n","", message);
+      }
+      gotoxy(1,18);
       for (int i = 0; i < room->n_activities; i++) {
          struct Activity* activity = &game.activities[room->activities[i]];
          printf("%5d activity: %s exits: %d activities: %d \n",i+1, activity->title, activity->n_exits, activity->n_activities);
@@ -199,7 +206,7 @@ struct Exit* showRoom(struct Exit* exit) {
    while (1) {
       struct Room* room = &game.rooms[game.currentRoom];
       header();
-      showOptions(room, game.messages[game.n_messages-1]);
+      showOptions(room);
       drawTodos();
       border();
       gotoxy(5,22);
@@ -217,7 +224,7 @@ static void sig_handler(int sig)
   if (SIGWINCH == sig) {
     header();
     struct Room* room = &game.rooms[game.currentRoom];
-    showOptions(room, game.messages[game.n_messages-1]);
+    showOptions(room);
     drawTodos();
     border();
        
