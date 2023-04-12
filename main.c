@@ -67,8 +67,8 @@ void border() {
    //   printf("║\n");
    //}
    borderLine(1, 10, divx, "╠", "╦");
-   borderLine(1, 12, divx, "╠", "╣");
-   borderLine(1, 17, divx, "╠", "╣");
+   borderLine(1, 14, divx, "╠", "╣");
+   borderLine(1, 19, divx, "╠", "╣");
    borderLine(divx, 10, w.ws_col-divx, "╦", "╣");
 }
 
@@ -110,8 +110,28 @@ printf(
 }
 
 void showOptions(struct Room* room) {
+      struct winsize w;
+      ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+      int divx = 2*w.ws_col/3;
+      
       gotoxy(1,11);
-      printf("%4s%s: %s\n", "", room->title, room->description);
+      int titleLen = strlen(room->title);
+      printf("%4s%s: ", "", room->title);
+      int lineLength = 0;
+      char description[128];
+      strcpy(description, room->description);
+      char* token = strtok(description, " ");
+      int line = 11;
+      while ( token != NULL ) {
+          if (lineLength + strlen(token) + 20 + titleLen > divx) {
+             lineLength = 0;
+             gotoxy(7+titleLen,++line);
+          }
+          lineLength += strlen(token);
+          printf( "%s ", token);
+          token = strtok(NULL, " ");
+      }
+      gotoxy(1,15);
       for (int i=0; i<4; i++) {
           if (game.n_messages-4+i < 0) {
              continue;
@@ -119,7 +139,7 @@ void showOptions(struct Room* room) {
           char* message = game.messages[game.n_messages-4+i];
          printf("%4s%s\n","", message);
       }
-      gotoxy(1,18);
+      gotoxy(1,20);
       for (int i = 0; i < room->n_activities; i++) {
          struct Activity* activity = &game.activities[room->activities[i]];
          printf("%5d activity: %s exits: %d activities: %d \n",i+1, activity->title, activity->n_exits, activity->n_activities);
@@ -133,7 +153,6 @@ void showOptions(struct Room* room) {
 }
 
 void selectActivity(struct Activity* activity) {
-    strcpy(game.messages[game.n_messages++], activity->description);
     for  (int i = 0; i < activity->n_activities; i++) {
         struct ActivityRoom actRoom = activity->activities[i];
         if (actRoom.room == THIS_ROOM) {
@@ -151,6 +170,7 @@ void selectActivity(struct Activity* activity) {
             room->activities[room->n_activities] = actRoom.activity;
          }
      }
+     strcpy(game.messages[game.n_messages++], activity->description);
      // Exits currently placed in this room - might update this same as activities
      struct Room* room = &game.rooms[game.currentRoom];
      
