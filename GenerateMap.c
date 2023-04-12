@@ -9,7 +9,7 @@
 #define NO_HELD_ACTIVITY 255
 
 struct Game generateMap() {
-   struct Game game = {{}, 0, {}, 0, {}, 0, {}, 0, {}, 0, 0, NO_HELD_ACTIVITY };
+   struct Game game = {{}, 0, {}, 0, {}, 0, {}, 0, {}, 0, 0, NO_HELD_ACTIVITY, 7, 0 };
    char line[MAX_LINE_LENGTH];
    char delim[2] = ",";
    

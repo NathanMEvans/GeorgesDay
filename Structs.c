@@ -49,5 +49,7 @@ struct Game {
    int n_messages;
    int currentRoom;
    int heldActivity;
+   int hours;
+   int minutes;
 };
 #endif

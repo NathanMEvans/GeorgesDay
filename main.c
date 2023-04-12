@@ -18,6 +18,14 @@
 #define NO_HELD_ACTIVITY 255
 
 struct Game game;
+
+void increaseTime(int hours, int minutes) {
+   game.minutes += minutes;
+   game.hours += hours;
+   game.hours += game.minutes / 60;
+   game.minutes = game.minutes % 60;
+   game.hours = game.hours % 24;
+}
 	
 void borderLine(int x, int y, int width, char capl[4], char capr[4]) {
    gotoxy(x,y);
@@ -70,6 +78,10 @@ void border() {
    borderLine(1, 14, divx, "╠", "╣");
    borderLine(1, 19, divx, "╠", "╣");
    borderLine(divx, 10, w.ws_col-divx, "╦", "╣");
+   
+   // clock outline
+   borderColumn(w.ws_col-7, 1, 2, "╦", "╚");
+   borderLine(w.ws_col-7, 3, 7, "╚", "╣");
 }
 
 
@@ -113,6 +125,10 @@ void showOptions(struct Room* room) {
       struct winsize w;
       ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
       int divx = 2*w.ws_col/3;
+      
+      // clock
+      gotoxy(w.ws_col - 6, 2);
+      printf("%02d:%02d", game.hours, game.minutes); 
       
       gotoxy(1,11);
       int titleLen = strlen(room->title);
@@ -236,6 +252,7 @@ struct Exit* showRoom(struct Exit* exit) {
       }
       sscanf(input, "%d", &inputI);
       handleInput(room, inputI);
+      increaseTime(0,10);
    }
 }
 
@@ -262,7 +279,6 @@ int main() {
    //  static struct Todo todo = {"", 0}; 
    //  todos[i] = todo;
    //}
-  
    game = generateMap();
    struct Exit* nextExit = &game.exits[0];
    //return 0;
