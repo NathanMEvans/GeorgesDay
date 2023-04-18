@@ -183,7 +183,7 @@ void selectActivity(struct Activity* activity) {
             game.heldActivity = actRoom.activity;
          } else {
             struct Room* room = &game.rooms[actRoom.room];
-            room->activities[room->n_activities] = actRoom.activity;
+            room->activities[room->n_activities++] = actRoom.activity;
          }
      }
      strcpy(game.messages[game.n_messages++], activity->description);

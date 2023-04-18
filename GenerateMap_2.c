@@ -21,8 +21,8 @@ struct Game generateMap() {
         {"Study","Two desks with computers and a big comfy sofa",1,0,{1},{}},						// 5
         {"Little park","A small park with lots of climbing frames",1,0,{11},{}},					// 6
         {"Big park","A large park with trees and hills",2,0,{9,10},{}},							// 7
-        {"Forest","A forest with lots of fallen down trees and muddy patches",2,0,{10,11},{}},				// 8
-        {"Green","An old bowling green",2,0,{9,11},{}},									// 9
+        {"Forest","A forest with lots of fallen down trees and muddy patches",2,1,{10,11},{15}},			// 8
+        {"Green","An old bowling green",2,1,{9,11},{12}},								// 9
         {"Armstrong park","A long park with a few different paths through",0,0,{},{}},					// 10
         {"Jesmond dene","A long park with a river running through it",0,0,{},{}},					// 11
      }, // rooms
@@ -30,16 +30,22 @@ struct Game generateMap() {
      { // activities
         {"Dog bed","You sleep for an hour",0,1,{},{0,THIS_ROOM},NOTODO},		// 0
         {"Big bed","You sleep for an hour",0,1,{},{1,THIS_ROOM},NOTODO},		// 1
-        {"Front door","You bark at the front door",1,0,{3},{},NOTODO},	// 2
-        {"TV","There is no dog on the TV",0,0,{},{},NOTODO},		// 3
-        {"Water bowl","Slurp Slurp Slurp Slurp Slurp",0,0,{},{},1}, 	// 4
-        {"Food bowl","You bark at the empty bowl",0,1,{},{6,THIS_ROOM},NOTODO},	// 5
-        {"Food bowl","Chomp Chomp Chomp Chomp Chomp",0,1,{},{5,THIS_ROOM},0},	// 6
+        {"Front door","You bark at the front door",1,0,{3},{},NOTODO},			// 2
+        {"TV","There is no dog on the TV",0,0,{},{},NOTODO},				// 3
+        {"Water bowl","Slurp Slurp Slurp Slurp Slurp",0,0,{},{},1}, 			// 4
+        {"Food bowl","You bark at the empty bowl",0,1,{},{6,THIS_ROOM},NOTODO},		// 5
+        {"Food bowl","Chomp Chomp Chomp Chomp Chomp",0,1,{},{5,THIS_ROOM},0},		// 6
         {"Laundry basket","You find a sock",0,1,{},{8,HELD_ACTIVITY},2},		// 7
         {"Put down socks","You put down the socks",0,1,{},{9,THIS_ROOM},NOTODO},	// 8
         {"Socks","You pick up the socks",0,1,{},{8,HELD_ACTIVITY},NOTODO},		// 9
         {"Ball","You pick up the ball",0,1,{},{11,HELD_ACTIVITY},NOTODO},		// 10
-        {"Put down ball","You drop the ball",0,1,{},{10,THIS_ROOM},NOTODO},	// 11
+        {"Put down ball","You drop the ball",0,1,{},{10,THIS_ROOM},NOTODO},		// 11
+        {"Long grass","Smells like wee",0,1,{},{13,THIS_ROOM},NOTODO},			// 12
+	{"Wee on long grass","It's your park now",0,1,{},{14,THIS_ROOM},3},		// 13
+        {"Long grass","Smells like your wee",0,1,{},{14,THIS_ROOM},NOTODO},		// 14
+        {"Bushes","You find a football",0,1,{},{16,HELD_ACTIVITY},NOTODO},		//15
+        {"Drop football","You leave the footbll for your dad to pick up",0,1,{},{17,6},NOTODO},//16
+        {"Chase football","Your dad kicks the football and you chase it",0,1,{},{16,HELD_ACTIVITY},4},//17
      }, // activities
      0,
      { // exits
@@ -59,11 +65,13 @@ struct Game generateMap() {
      }, // exits
      0,
      { // todos
-	{"Breakfast",0},
-        {"Slurps",0},
-        {"Steal socks",0},
+	{"Breakfast",0},	// 0
+        {"Slurps",0},		// 1
+        {"Steal socks",0},	// 2
+        {"Claim bushes",0},	// 3
+        {"Play football",0},	// 4
      }, // todos
-     3,
+     5,
      {}, // messages
      0,
      0,
