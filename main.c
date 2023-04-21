@@ -158,13 +158,25 @@ void showOptions(struct Room* room) {
       gotoxy(1,20);
       for (int i = 0; i < room->n_activities; i++) {
          struct Activity* activity = &game.activities[room->activities[i]];
+#ifdef DEBUG
          printf("%5d activity: %s exits: %d activities: %d \n",i+1, activity->title, activity->n_exits, activity->n_activities);
+#else
+         printf("%5d %s\n",i+1, activity->title);
+#endif
       }
       for (int i = 0; i < room->n_exits; i++) {
+#ifdef DEBUG
          printf("%5d exit: %s\n",i+room->n_activities+1,game.exits[room->exits[i]].title);
+#else
+         printf("%5d %s\n",i+room->n_activities+1,game.exits[room->exits[i]].title);
+#endif
       }
       if (game.heldActivity != NO_HELD_ACTIVITY) {
+#ifdef DEBUG
          printf("%5d held activity: %s\n",room->n_exits+room->n_activities+1,game.activities[game.heldActivity].title);
+#else 
+         printf("%5d %s\n",room->n_exits+room->n_activities+1,game.activities[game.heldActivity].title);
+#endif
       }
 }
 
@@ -245,7 +257,8 @@ struct Exit* showRoom(struct Exit* exit) {
       showOptions(room);
       drawTodos();
       border();
-      gotoxy(5,22);
+      gotoxy(5,30);
+      printf("What do you want to do next?: ");
       fgets(input, 10, stdin);
       if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')) {
          input[strlen (input) - 1] = '\0';
@@ -264,7 +277,9 @@ static void sig_handler(int sig)
     showOptions(room);
     drawTodos();
     border();
-       
+    gotoxy(5,30);
+    printf("What do you want to do next?: \n");
+    gotoxy(38,40);
   }
 
 } // sig_handler
@@ -283,8 +298,6 @@ int main() {
    struct Exit* nextExit = &game.exits[0];
    //return 0;
    strcpy(game.messages[game.n_messages++], nextExit->description);
-   while (1) {
-      nextExit = showRoom(nextExit);
-   }
+   showRoom(nextExit);
 }
 

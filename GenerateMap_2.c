@@ -1,5 +1,4 @@
 #include "GenerateMap.h"
-#include "MapC/exits.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -68,7 +67,7 @@ struct Game generateMap() {
 	{"Breakfast",0},	// 0
         {"Slurps",0},		// 1
         {"Steal socks",0},	// 2
-        {"Claim bushes",0},	// 3
+        {"Claim park",0},	// 3
         {"Play football",0},	// 4
      }, // todos
      5,
