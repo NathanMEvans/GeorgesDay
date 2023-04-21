@@ -235,10 +235,11 @@ void drawTodos() {
    }
  
 }
-struct Exit* showRoom(struct Exit* exit) {
+void showRoom(struct Exit* exit) {
    struct Room* room = &game.rooms[game.currentRoom];
    char* input = malloc(sizeof(char)*10);
    int inputI = 0;
+   int count = 0;
    while (1) {
       struct Room* room = &game.rooms[game.currentRoom];
       header();
@@ -253,7 +254,11 @@ struct Exit* showRoom(struct Exit* exit) {
       sscanf(input, "%d", &inputI);
       handleInput(room, inputI);
       increaseTime(0,10);
-   }
+  //   break;
+      if (count++ > 4) {
+       break;
+      }
+    }
 }
 
 static void sig_handler(int sig)
@@ -283,8 +288,7 @@ int main() {
    struct Exit* nextExit = &game.exits[0];
    //return 0;
    strcpy(game.messages[game.n_messages++], nextExit->description);
-   while (1) {
-      nextExit = showRoom(nextExit);
-   }
+   showRoom(nextExit);
+   return 0;
 }
 

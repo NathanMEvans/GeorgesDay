@@ -343,7 +343,7 @@ assert(!ENVIRONMENT_IS_SHELL, "shell environment detected but not enabled at bui
 
 var wasmBinary;
 if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];legacyModuleProp('wasmBinary', 'wasmBinary');
-var noExitRuntime = Module['noExitRuntime'] || true;legacyModuleProp('noExitRuntime', 'noExitRuntime');
+var noExitRuntime = Module['noExitRuntime'] || false;legacyModuleProp('noExitRuntime', 'noExitRuntime');
 
 if (typeof WebAssembly != 'object') {
   abort('no native wasm support detected');
@@ -488,6 +488,8 @@ var __ATPOSTRUN__ = []; // functions called after the main() is called
 
 var runtimeInitialized = false;
 
+var runtimeExited = false;
+
 var runtimeKeepaliveCounter = 0;
 
 function keepRuntimeAlive() {
@@ -525,6 +527,16 @@ function preMain() {
   callRuntimeCallbacks(__ATMAIN__);
 }
 
+function exitRuntime() {
+  assert(!runtimeExited);
+  checkStackCookie();
+  ___funcs_on_exit(); // Native atexit() functions
+  callRuntimeCallbacks(__ATEXIT__);
+  FS.quit();
+TTY.shutdown();
+  runtimeExited = true;
+}
+
 function postRun() {
   checkStackCookie();
 
@@ -551,6 +563,7 @@ function addOnPreMain(cb) {
 }
 
 function addOnExit(cb) {
+  __ATEXIT__.unshift(cb);
 }
 
 function addOnPostRun(cb) {
@@ -717,6 +730,7 @@ function createExportWrapper(name, fixedasm) {
       asm = Module['asm'];
     }
     assert(runtimeInitialized, 'native function `' + displayName + '` called before runtime initialization');
+    assert(!runtimeExited, 'native function `' + displayName + '` called after runtime exit (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
     if (!asm[name]) {
       assert(asm[name], 'exported native function `' + displayName + '` not found');
     }
@@ -727,7 +741,7 @@ function createExportWrapper(name, fixedasm) {
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 var wasmBinaryFile;
-  wasmBinaryFile = 'GeorgesDay.wasm';
+  wasmBinaryFile = 'test.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
@@ -1342,24 +1356,10 @@ function dbg(text) {
         },fsync:function(stream) {
           stream.tty.ops.fsync(stream.tty);
         },read:function(stream, buffer, offset, length, pos /* ignored */) {
-          if (!stream.tty || !stream.tty.ops.get_char) {
-            throw new FS.ErrnoError(60);
-          }
-          var bytesRead = 0;
-          for (var i = 0; i < length; i++) {
-            var result;
-            try {
-              result = stream.tty.ops.get_char(stream.tty);
-            } catch (e) {
-              throw new FS.ErrnoError(29);
-            }
-            if (result === undefined && bytesRead === 0) {
-              throw new FS.ErrnoError(6);
-            }
-            if (result === null || result === undefined) break;
-            bytesRead++;
-            buffer[offset+i] = result;
-          }
+          
+          bytesRead1;
+          buffer[offset+1] = 49;
+        
           if (bytesRead) {
             stream.node.timestamp = Date.now();
           }
@@ -1407,9 +1407,6 @@ function dbg(text) {
               typeof window.prompt == 'function') {
               // Browser.
               result = window.prompt('Input: ');  // returns null on cancel
-              if (result !== null) {
-                result += '\n';
-              }
             } else if (typeof readline == 'function') {
               // Command line.
               result = readline();
@@ -1421,7 +1418,12 @@ function dbg(text) {
               return null;
             }
             tty.input = intArrayFromString(result, true);
+            
           }
+          console.log(tty.input);
+          console.log(tty.input.shift());
+          console.log(tty.input);
+          console.log(intArrayFromString(result, true));
           return tty.input.shift();
         },put_char:function(tty, val) {
           if (val === null || val === 10) {
@@ -2658,7 +2660,10 @@ function dbg(text) {
         } else if (!stream.seekable) {
           throw new FS.ErrnoError(70);
         }
-        var bytesRead = stream.stream_ops.read(stream, buffer, offset, length, position);
+        //read:(stream, buffer, offset, length, position)
+        var bytesRead = 1;
+        buffer[offset+0] = 49;
+        stream.node.timestamp = Date.now();
         if (!seeking) stream.position += bytesRead;
         return bytesRead;
       },write:(stream, buffer, offset, length, position, canOwn) => {
@@ -3544,12 +3549,30 @@ function dbg(text) {
       var ret = 0;
       for (var i = 0; i < iovcnt; i++) {
         var ptr = HEAPU32[((iov)>>2)];
+        console.log(ptr);
+
         var len = HEAPU32[(((iov)+(4))>>2)];
+        console.log(len);
         iov += 8;
-        var curr = FS.read(stream, HEAP8,ptr, len, offset);
+        //read:(stream, buffer, offset, length, position)
+        var bytesRead = 1;
+        HEAP8[ptr+0] = 51; // "3"
+        stream.node.timestamp = Date.now();
+        var seeking = typeof offset != 'undefined';
+        if (!seeking) {
+          offset = stream.position;
+        }
+        if (!seeking) stream.position += bytesRead;
+        curr = bytesRead;
+        //var curr = FS.read(stream, HEAP8,ptr, len, offset);
         if (curr < 0) return -1;
         ret += curr;
-        if (curr < len) break; // nothing more to read
+        console.log("curr: ", curr);
+        console.log("len: ",len);
+        if (curr < len) {
+          console.log("nothing more to read");
+          break; // nothing more to read
+        }
         if (typeof offset !== 'undefined') {
           offset += curr;
         }
@@ -3559,10 +3582,19 @@ function dbg(text) {
   
   function _fd_read(fd, iov, iovcnt, pnum) {
   try {
-  
+      //await new Promise(resolve =>setTimeout(resolve, 5000));
+      process.stdin.pause()
       var stream = SYSCALLS.getStreamFromFD(fd);
-      var num = doReadv(stream, iov, iovcnt);
-      HEAPU32[((pnum)>>2)] = num;
+      console.log(iov.toString(2));
+      console.log(((iov)>>2).toString(2));
+      console.log(iovcnt.toString(2));
+      var ptr = HEAPU32[((iov)>>2)];
+      HEAP8[ptr+0] = 0;
+      iov += 8;
+      var ptr = HEAPU32[((iov)>>2)];
+      HEAP8[ptr+0] = 52;
+      //var num = doReadv(stream, iov, iovcnt);
+      HEAPU32[((pnum)>>2)] = 1;
       return 0;
     } catch (e) {
     if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
@@ -3637,7 +3669,9 @@ function dbg(text) {
   function exitJS(status, implicit) {
       EXITSTATUS = status;
   
-      checkUnflushedContent();
+      if (!keepRuntimeAlive()) {
+        exitRuntime();
+      }
   
       // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
       if (keepRuntimeAlive() && !implicit) {
@@ -3660,7 +3694,7 @@ function dbg(text) {
       checkStackCookie();
       if (e instanceof WebAssembly.RuntimeError) {
         if (_emscripten_stack_get_current() <= 0) {
-          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to ' + 65536 + ')');
+          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to ' + 5242880 + ')');
         }
       }
       quit_(1, e);
@@ -3854,6 +3888,8 @@ var ___wasm_call_ctors = createExportWrapper("__wasm_call_ctors");
 var _main = Module["_main"] = createExportWrapper("main");
 /** @type {function(...*):?} */
 var ___errno_location = createExportWrapper("__errno_location");
+/** @type {function(...*):?} */
+var ___funcs_on_exit = createExportWrapper("__funcs_on_exit");
 /** @type {function(...*):?} */
 var _fflush = Module["_fflush"] = createExportWrapper("fflush");
 /** @type {function(...*):?} */
@@ -4264,45 +4300,6 @@ function run() {
     doRun();
   }
   checkStackCookie();
-}
-
-function checkUnflushedContent() {
-  // Compiler settings do not allow exiting the runtime, so flushing
-  // the streams is not possible. but in ASSERTIONS mode we check
-  // if there was something to flush, and if so tell the user they
-  // should request that the runtime be exitable.
-  // Normally we would not even include flush() at all, but in ASSERTIONS
-  // builds we do so just for this check, and here we see if there is any
-  // content to flush, that is, we check if there would have been
-  // something a non-ASSERTIONS build would have not seen.
-  // How we flush the streams depends on whether we are in SYSCALLS_REQUIRE_FILESYSTEM=0
-  // mode (which has its own special function for this; otherwise, all
-  // the code is inside libc)
-  var oldOut = out;
-  var oldErr = err;
-  var has = false;
-  out = err = (x) => {
-    has = true;
-  }
-  try { // it doesn't matter if it fails
-    _fflush(0);
-    // also flush in the JS FS layer
-    ['stdout', 'stderr'].forEach(function(name) {
-      var info = FS.analyzePath('/dev/' + name);
-      if (!info) return;
-      var stream = info.object;
-      var rdev = stream.rdev;
-      var tty = TTY.ttys[rdev];
-      if (tty && tty.output && tty.output.length) {
-        has = true;
-      }
-    });
-  } catch(e) {}
-  out = oldOut;
-  err = oldErr;
-  if (has) {
-    warnOnce('stdio streams had content in them that was not flushed. you should set EXIT_RUNTIME to 1 (see the FAQ), or make sure to emit a newline when you printf etc.');
-  }
 }
 
 if (Module['preInit']) {

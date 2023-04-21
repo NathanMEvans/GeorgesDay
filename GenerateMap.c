@@ -1,4 +1,5 @@
 #include "GenerateMap.h"
+#include "MapC/exits.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,10 +50,11 @@ struct Game generateMap() {
      strcpy(newExit.title, strtok(NULL,delim));
      strcpy(newExit.description, strtok(NULL,delim));
      sscanf(strtok(NULL,delim), "%d", &newExit.room);
-     game.exits[game.n_exits++] = newExit;
+     //game.exits[game.n_exits++] = newExit;
    }
    fclose(exitcsv);
-   
+   struct Exit* exits = generateExits();
+   memcpy(game.exits, exits, sizeof(struct Exit)*256);
    // create TODOS
    FILE* todocsv;
    todocsv = fopen("Map/Todo-Todo.csv", "r");
