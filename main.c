@@ -271,26 +271,20 @@ void drawTodos() {
    }
  
 }
-struct Exit* showRoom(struct Exit* exit) {
-   struct Room* room = &game.rooms[game.currentRoom];
-   char* input = malloc(sizeof(char)*10);
-   int inputI = 0;
-   while (1) {
-      struct Room* room = &game.rooms[game.currentRoom];
-      header();
-      showOptions(room);
-      drawTodos();
-      border();
-      gotoxy(5,30);
-      printf("What do you want to do next?: ");
-      fgets(input, 10, stdin);
-      if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')) {
-         input[strlen (input) - 1] = '\0';
-      }
-      sscanf(input, "%d", &inputI);
-      handleInput(room, inputI);
-      increaseTime(0,10);
-   }
+
+void showRoom(int inputI) {
+  struct Room* room = &game.rooms[game.currentRoom];
+  if (inputI > 0) {
+    handleInput(room, inputI);
+    increaseTime(0,10);
+  }
+  room = &game.rooms[game.currentRoom];
+  header();
+  showOptions(room);
+  drawTodos();
+  border();
+  gotoxy(5,30);
+  printf("What do you want to do next?: ");
 }
 
 static void sig_handler(int sig)
@@ -309,19 +303,49 @@ static void sig_handler(int sig)
 } // sig_handler
 
 
-
-int main() {
-   signal(SIGWINCH, sig_handler);
-   //static struct Todo todos[N_TODOS];
-   
-   //for (int i=0; i<N_TODOS; i++) {
-   //  static struct Todo todo = {"", 0}; 
-   //  todos[i] = todo;
-   //}
-   game = generateMap();
-   struct Exit* nextExit = &game.exits[0];
-   //return 0;
-   strcpy(game.messages[game.n_messages++], nextExit->description);
-   showRoom(nextExit);
+int main( int argc, char *argv[] )  {
+    char* fname = "georges.day";
+    FILE *file;
+    if ((file = fopen(fname, "r")))
+    {
+       fread(&game, sizeof(struct Game), 1, file);
+       fclose(file);
+       if (argc == 2) {
+          if (strcmp(argv[1],"--interactive") == 0) {
+             showRoom(0);
+             char* input = malloc(sizeof(char)*10);
+             int inputI = 0;
+             while (1) {
+               fgets(input, 10, stdin);
+               if ((strlen(input) > 0) && (input[strlen (input) - 1] == '\n')) {
+                  input[strlen (input) - 1] = '\0';
+               }
+             
+               sscanf(input, "%d", &inputI);
+               showRoom(inputI);
+               file = fopen(fname, "w");
+               fwrite(&game, sizeof(struct Game), 1, file);
+               fclose(file);
+             }
+          }
+          int inputI;
+          sscanf(argv[1],"%d",&inputI);
+          showRoom(inputI);
+       } else {
+          showRoom(0);
+       }
+       file = fopen(fname, "w");
+       fwrite(&game, sizeof(struct Game), 1, file);
+       fclose(file);
+    } else {
+      file = fopen(fname, "w");
+      printf("0\n");
+      game = generateMap();
+      struct Exit* nextExit = &game.exits[0];
+      strcpy(game.messages[game.n_messages++], nextExit->description);
+      showRoom(0);
+      fwrite(&game, sizeof(struct Game), 1, file);
+      fclose(file);
+   }
+   return 0;
 }
-
