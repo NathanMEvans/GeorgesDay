@@ -1,6 +1,11 @@
 #ifndef STRUCTS_INCLUDED
 #define STRUCTS_INCLUDED
 
+struct TimeRange {
+   int start;
+   int end;
+};
+
 struct ActivityRoom {
    int activity;
    int room;
@@ -14,12 +19,14 @@ struct Activity {
    int exits[10];
    struct ActivityRoom activities[10];
    int todo;
+   struct TimeRange timeRange;
 };
 
 struct Exit {
    char title[128];
    char description[128];
    int room;
+   struct TimeRange timeRange;
 };
 
 struct Room {
