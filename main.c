@@ -272,7 +272,25 @@ void drawTodos() {
  
 }
 
+void loadGame() {
+   char* fname = "georges.day";
+   FILE *file;
+   if((file = fopen(fname, "r"))) {
+     fread(&game, sizeof(struct Game), 1, file);
+     fclose(file);
+   }
+}
+
+void saveGame() {
+   char* fname = "georges.day";
+   FILE *file;
+   file = fopen(fname, "w");
+   fwrite(&game, sizeof(struct Game), 1, file);
+   fclose(file);
+}
+
 void showRoom(int inputI) {
+  loadGame();
   struct Room* room = &game.rooms[game.currentRoom];
   if (inputI > 0) {
     handleInput(room, inputI);
@@ -285,6 +303,7 @@ void showRoom(int inputI) {
   border();
   gotoxy(5,30);
   printf("What do you want to do next?: ");
+  saveGame();
 }
 
 static void sig_handler(int sig)
@@ -301,6 +320,18 @@ static void sig_handler(int sig)
   }
 
 } // sig_handler
+
+void initiateGame() {
+   char* fname = "georges.day";
+   FILE *file;
+   game = generateMap();
+   struct Exit* nextExit = &game.exits[0];
+   strcpy(game.messages[game.n_messages++], nextExit->description);
+   file = fopen(fname, "w");
+   fwrite(&game, sizeof(struct Game), 1, file);
+   fclose(file);
+}
+
 
 
 int main( int argc, char *argv[] )  {

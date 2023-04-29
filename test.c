@@ -1,11 +1,9 @@
 #include <stdio.h>
 
-int main() {
- char c;
- printf("Enter string: ");
- //scanf("%s",c);
- c = getchar();
- printf("string entered: %c", c);
+int main(int argc, char *argv[] ) {
+ for (int i = 0; i<argc; i++) {
+   printf("argv %d: %s",i, argv[i]);
+ }
  return 0;
 
 }

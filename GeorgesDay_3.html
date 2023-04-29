@@ -104,10 +104,11 @@
   <body>
    
     <textarea id="output" rows="8"></textarea>
-    <form>
+    <form onSubmit="return Module.choiceEntered()">
       <label for="choice">choice:</label><br>
       <input type="text" id="choice" name="choice"><br>
     </form>
+    <script async type="text/javascript" src="GeorgesDay.js"></script>
     <script type='text/javascript'>
       var Module = {
         preRun: [],
@@ -128,22 +129,20 @@
             }
           };
         })(),
-        getInput: (function() {
+        choiceEntered: (function() {
           var element = document.getElementById("choice");
-          return function() {
-            //await new Promise(r => setTimeout(r, 2000));
-            var input = element.value;
-            element.value = "";
-            return input;
-          }
-        })(),
+          showRoom = Module.cwrap('showRoom', null, ['number']);
+          showRoom(element.value);
+          element.value = "";
+          return false;
+        }),
         totalDependencies: 0,
         monitorRunDependencies: function(left) {
           this.totalDependencies = Math.max(this.totalDependencies, left);
         }
       };
     </script>
-    <script async type="text/javascript" src="GeorgesDay_3.js"></script>
+   
   </body>
 </html>
 

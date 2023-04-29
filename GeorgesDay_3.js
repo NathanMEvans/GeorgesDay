@@ -4257,7 +4257,7 @@ function run() {
   function doRun() {
     // run may have just been called through dependencies being fulfilled just in this very frame,
     // or while the async setStatus time below was happening
-    if (calledRun) return;
+    //if (calledRun) return;
     calledRun = true;
     Module['calledRun'] = true;
 
