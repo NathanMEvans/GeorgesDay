@@ -539,10 +539,7 @@ function postRun() {
       addOnPostRun(Module['postRun'].shift());
     }
   }
-  initiateGame = Module.cwrap('initiateGame', null, []);
-  initiateGame();
-  showRoom = Module.cwrap('showRoom', null, ['number']);
-  showRoom("1");
+  
   callRuntimeCallbacks(__ATPOSTRUN__);
 }
 
@@ -3707,9 +3704,14 @@ function dbg(text) {
   }
   }
 
+  function _js_getScreenHeight()  {
+          var h =  Module.textAreaHeight();
+          return h;
+      }
+
   function _js_getScreenWidth()  {
-        var w = Module.textAreaWidth();
-        return w;
+          var w = Module.textAreaWidth();
+          return w;
       }
 
   function getCFunc(ident) {
@@ -3989,6 +3991,7 @@ var wasmImports = {
   "fd_read": _fd_read,
   "fd_seek": _fd_seek,
   "fd_write": _fd_write,
+  "js_getScreenHeight": _js_getScreenHeight,
   "js_getScreenWidth": _js_getScreenWidth
 };
 var asm = createWasm();

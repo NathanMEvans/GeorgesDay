@@ -11,84 +11,11 @@
         padding: none;
       }
 
-      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      div.emscripten { text-align: center; }      
-      div.emscripten_border { border: 1px solid black; }
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: black; }
-
-      #emscripten_logo {
-        display: inline-block;
-        margin: 0;
-      }
-
-      .spinner {
-        height: 30px;
-        width: 30px;
-        margin: 0;
-        margin-top: 20px;
-        margin-left: 20px;
-        display: inline-block;
-        vertical-align: top;
-
-        -webkit-animation: rotation .8s linear infinite;
-        -moz-animation: rotation .8s linear infinite;
-        -o-animation: rotation .8s linear infinite;
-        animation: rotation 0.8s linear infinite;
-
-        border-left: 5px solid rgb(235, 235, 235);
-        border-right: 5px solid rgb(235, 235, 235);
-        border-bottom: 5px solid rgb(235, 235, 235);
-        border-top: 5px solid rgb(120, 120, 120);
-        
-        border-radius: 100%;
-        background-color: rgb(189, 215, 46);
-      }
-
-      @-webkit-keyframes rotation {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
-      }
-      @-moz-keyframes rotation {
-        from {-moz-transform: rotate(0deg);}
-        to {-moz-transform: rotate(360deg);}
-      }
-      @-o-keyframes rotation {
-        from {-o-transform: rotate(0deg);}
-        to {-o-transform: rotate(360deg);}
-      }
-      @keyframes rotation {
-        from {transform: rotate(0deg);}
-        to {transform: rotate(360deg);}
-      }
-
-      #status {
-        display: inline-block;
-        vertical-align: top;
-        margin-top: 30px;
-        margin-left: 20px;
-        font-weight: bold;
-        color: rgb(120, 120, 120);
-      }
-
-      #progress {
-        height: 20px;
-        width: 300px;
-      }
-
-      #controls {
-        display: inline-block;
-        float: right;
-        vertical-align: top;
-        margin-top: 30px;
-        margin-right: 20px;
-      }
-
       #output {
-        width: 700px;
-        height: 350px;
+        /*width: 100ch;
+        height: 46em;*/
         margin: 0 auto;
-        margin-top: 10px;
+        margin-top: 0px;
         border-left: 0px;
         border-right: 0px;
         padding-left: 0px;
@@ -103,77 +30,74 @@
   </head>
   <body>
    
-    <textarea id="output" rows="50", cols="100"></textarea>
-    <form onSubmit="return Module.choiceEntered()">
-      <label for="choice">choice:</label><br>
-      <input type="text" id="choice" name="choice"><br>
-    </form>
-    <script async type="text/javascript" src="GeorgesDay.js"></script>
+    <textarea id="output" rows="40", cols="100"></textarea>
+    
     <script type='text/javascript'>
       var Module = {
         preRun: [],
-        postRun: [],
+        postRun: [(function() {
+          initiateGame = Module.cwrap('initiateGame', null, []);
+          initiateGame();
+          var output = document.getElementById('output');
+          screenText = ""
+          for (let row of Module.screenBuffer) {
+            screenText += row.join("");
+            screenText += "\n";
+          }
+          Module.screenBuffer = [...Array(document.getElementById("output").rows)].map(e => Array(document.getElementById("output").cols).fill(" "));
+          Module.cursor = [0,0];
+          output.value = screenText;
+          output.focus();
+          output.setSelectionRange(2965,2965);
+        })],
         textAreaWidth: (function() {
           w = document.getElementById("output").cols;
           return w;
         }),
-        screenBuffer: [...Array(50)].map(e => Array(100).fill(" ")),
+        textAreaHeight: (function() {
+          h = document.getElementById("output").rows;
+          return h;
+        }),
+        screenBuffer: [...Array(document.getElementById("output").rows)].map(e => Array(document.getElementById("output").cols).fill(" ")),
         cursor: [0,0],
+        choice: "",
         print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
-            //if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join('\n');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
-            let regex = /\u001b\[\d+;\d+H/;
-            let regex2 = /\u001b\[(\d+);(\d+)H/;
-            let regex3 = /^\u001b\[(\d+);(\d+)H/;
-            let regex4 = /^\u001b\[H\u001b\[J/;
-            /*let found = text.match(regex2)
-            if (found && found.length > 2) {
-              Module.cursor[1] = parseInt(found[1]);
-              Module.cursor[0] = parseInt(found[2]);
-            }
-            textArray = text.split(regex);
-            for (let text of textArray) {
-            */
+            let regexGoTo = /^\u001b\[(\d+);(\d+)H/;
+            let regexClear = /^\u001b\[H\u001b\[J/;
+
               let i = 0;
               while (i < text.length) {
-                let foundClear = text.slice(i).match(regex4)
+                let foundClear = text.slice(i).match(regexClear)
                 if (foundClear && foundClear.length > 0) {
                   i = i+foundClear[0].length
                 }
-                let foundGoTo = text.slice(i).match(regex3)
+                let foundGoTo = text.slice(i).match(regexGoTo)
                 if (foundGoTo && foundGoTo.length > 2) {
-                  Module.cursor[1] = parseInt(foundGoTo[1]);
-                  Module.cursor[0] = parseInt(foundGoTo[2]);
+                  Module.cursor[1] = parseInt(foundGoTo[1])-1;
+                  Module.cursor[0] = parseInt(foundGoTo[2])-1;
                   i = i+foundGoTo[0].length
                 }
-                if (text[i] == "\n") {
-                  i++;
-                  Module.cursor[0] = 0;
-                  Module.cursor[1] += 1;
-                }
+                
                 Module.screenBuffer[Module.cursor[1]][Module.cursor[0]] = text[i];
                 Module.cursor[0] += 1;
-                if (Module.cursor[0] > 100-1) {
+                if (Module.cursor[0] > document.getElementById("output").cols-1) {
                   Module.cursor[0] = 0;
                   Module.cursor[1] += 1;
                 }
                 i++;
               }
+              Module.cursor[0] = 0;
+              Module.cursor[1] += 1;
             //}
           };
         })(),
         choiceEntered: (function() {
-          var choice = document.getElementById("choice");
           showRoom = Module.cwrap('showRoom', null, ['number']);
-          showRoom(choice.value);
-          choice.value = "";
+          showRoom(Module.choice);
+          Module.choice = "";
 
           var output = document.getElementById('output');
           screenText = ""
@@ -181,9 +105,12 @@
             screenText += row.join("");
             screenText += "\n";
           }
-          Module.screenBuffer = [...Array(50)].map(e => Array(100).fill(" "));
+          Module.screenBuffer = [...Array(document.getElementById("output").rows)].map(e => Array(document.getElementById("output").cols).fill(" "));
           Module.cursor = [0,0];
           output.value = screenText;
+          output.scrollTop = 0;
+          output.focus();
+          output.setSelectionRange(2965,2965);
           return false;
         }),
         totalDependencies: 0,
@@ -191,8 +118,26 @@
           this.totalDependencies = Math.max(this.totalDependencies, left);
         }
       };
+      document.getElementById('output').addEventListener("keydown", function onPress(event) {
+        if (event.key === "Enter") {
+          Module.choiceEntered();
+        } else {
+          let regexDigit = /^\d$/;
+          if (event.key.match(regexDigit)) {
+            Module.choice = event.key;
+            output = document.getElementById('output');
+            arrayText = output.value.split("");
+            arrayText[2964] = event.key;
+            output.value = arrayText.join("");
+            output.focus();
+            output.setSelectionRange(2965,2965);
+          }
+        }
+        event.preventDefault();
+        //return false;
+      });
     </script>
-   
+    <script async type="text/javascript" src="GeorgesDay.js"></script>
   </body>
 </html>
 

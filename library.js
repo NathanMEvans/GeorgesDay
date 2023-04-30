@@ -5,7 +5,7 @@ mergeInto(LibraryManager.library, {
         return w;
     },
     js_getScreenHeight: function()  {
-        var h = window.innerHeight/8;
+        var h =  Module.textAreaHeight();
         return h;
     }
   });

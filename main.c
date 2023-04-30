@@ -19,18 +19,22 @@
 
 struct Game game;
 
+#ifdef JS
 extern int js_getScreenWidth();
 extern int js_getScreenHeight();
 struct winsize getWindowSize() {
    struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-   if (w.ws_col == 0) {
-      w.ws_col = js_getScreenWidth();
-      w.ws_row = js_getScreenHeight();
-   }
+   w.ws_col = js_getScreenWidth();
+   w.ws_row = js_getScreenHeight();
    return w;
 }
-
+#else
+struct winsize getWindowSize() {
+   struct winsize w;
+   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   return w;
+}
+#endif
 void increaseTime(int hours, int minutes) {
    game.minutes += minutes;
    game.hours += hours;
