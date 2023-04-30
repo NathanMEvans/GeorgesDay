@@ -96,7 +96,7 @@
         display: block;
         background-color: black;
         color: white;
-        font-family: 'Lucida Console', Monaco, monospace;
+        font-family: 'Lucida Console', monospace;
         outline: none;
       }
     </style>
@@ -123,7 +123,7 @@
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
-            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join('');
+            //if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join('\n');
             // These replacements are necessary if you render to raw HTML
             //text = text.replace(/&/g, "&amp;");
             //text = text.replace(/</g, "&lt;");
@@ -131,23 +131,42 @@
             //text = text.replace('\n', '<br>', 'g');
             let regex = /\u001b\[\d+;\d+H/;
             let regex2 = /\u001b\[(\d+);(\d+)H/;
-            let found = text.match(regex2)
+            let regex3 = /^\u001b\[(\d+);(\d+)H/;
+            let regex4 = /^\u001b\[H\u001b\[J/;
+            /*let found = text.match(regex2)
             if (found && found.length > 2) {
               Module.cursor[1] = parseInt(found[1]);
               Module.cursor[0] = parseInt(found[2]);
             }
             textArray = text.split(regex);
             for (let text of textArray) {
-             
-              for (let i in text) {
+            */
+              let i = 0;
+              while (i < text.length) {
+                let foundClear = text.slice(i).match(regex4)
+                if (foundClear && foundClear.length > 0) {
+                  i = i+foundClear[0].length
+                }
+                let foundGoTo = text.slice(i).match(regex3)
+                if (foundGoTo && foundGoTo.length > 2) {
+                  Module.cursor[1] = parseInt(foundGoTo[1]);
+                  Module.cursor[0] = parseInt(foundGoTo[2]);
+                  i = i+foundGoTo[0].length
+                }
+                if (text[i] == "\n") {
+                  i++;
+                  Module.cursor[0] = 0;
+                  Module.cursor[1] += 1;
+                }
                 Module.screenBuffer[Module.cursor[1]][Module.cursor[0]] = text[i];
                 Module.cursor[0] += 1;
                 if (Module.cursor[0] > 100-1) {
                   Module.cursor[0] = 0;
                   Module.cursor[1] += 1;
                 }
+                i++;
               }
-            }
+            //}
           };
         })(),
         choiceEntered: (function() {
