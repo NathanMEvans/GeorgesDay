@@ -1,132 +1,84 @@
 #include "GenerateMap.h"
-#include "MapC/exits.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 1000
 #define NOTODO 255
+#define THIS_ROOM 255
+#define HELD_ACTIVITY 254
 #define NO_HELD_ACTIVITY 255
 
 struct Game generateMap() {
-   struct Game game = {{}, 0, {}, 0, {}, 0, {}, 0, {}, 0, 0, NO_HELD_ACTIVITY, 7, 0 };
-   char line[MAX_LINE_LENGTH];
-   char delim[2] = ",";
-   
-   // create rooms
-   FILE* roomcsv;
-   roomcsv = fopen("Map/Rooms-Rooms.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,roomcsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,roomcsv)) {
-     struct Room newRoom = {"","",0,0,{},{}};
-     strtok(line,delim); // ID do nothing
-     strcpy(newRoom.title, strtok(NULL,delim));
-     strcpy(newRoom.description, strtok(NULL,delim));
-     game.rooms[game.n_rooms++] = newRoom;
-   }  
-   fclose(roomcsv);
-   
-   // create activities
-   FILE* activitycsv;
-   activitycsv = fopen("Map/Actvities-Actvities.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,activitycsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,activitycsv)) {
-     struct Activity newActivity = {"","",0,0,{},{},NOTODO};
-     strtok(line,delim); // ID do nothing
-     strcpy(newActivity.title, strtok(NULL,delim));
-     strcpy(newActivity.description, strtok(NULL,delim));
-     game.activities[game.n_activities++] = newActivity;
-   } 
-   fclose(activitycsv);
-   
-   // create exits
-   FILE* exitcsv;
-   exitcsv = fopen("Map/Exits-Exits.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,exitcsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,exitcsv)) {
-     struct Exit newExit = {"","", 0};
-     strtok(line,delim); // ID do nothing
-     strcpy(newExit.title, strtok(NULL,delim));
-     strcpy(newExit.description, strtok(NULL,delim));
-     sscanf(strtok(NULL,delim), "%d", &newExit.room);
-     //game.exits[game.n_exits++] = newExit;
-   }
-   fclose(exitcsv);
-   struct Exit* exits = generateExits();
-   memcpy(game.exits, exits, sizeof(struct Exit)*256);
-   // create TODOS
-   FILE* todocsv;
-   todocsv = fopen("Map/Todo-Todo.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,todocsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,todocsv)) {
-      struct Todo todo = {"", 0};
-      strtok(line,delim); // ID do nothing
-      strcpy(todo.title, strtok(NULL,delim));
-      todo.complete = 0;
-      int activityID = 0;
-      sscanf(strtok(NULL,delim), "%d", &activityID);
-      game.activities[activityID].todo = game.n_todos;
-      game.todos[game.n_todos++] = todo;
-   }
- 
-   // add exits to rooms
-   FILE* roomExitcsv = fopen("Map/RoomExits-RoomExits.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,roomExitcsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,roomExitcsv)) {
-      strtok(line,delim); // ID do nothing
-      int roomID = 0;
-      sscanf(strtok(NULL,delim), "%d", &roomID);
-      int exitID = 0;
-      sscanf(strtok(NULL,delim), "%d", &exitID);
-      struct Room* room = &game.rooms[roomID];
-      room->exits[room->n_exits++] = exitID;
-   }
-   fclose(roomExitcsv);
-   
-   // add exits to activities
-   FILE* activityExitcsv = fopen("Map/activityExits-activityExits.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,activityExitcsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,activityExitcsv)) {
-      strtok(line,delim); // ID do nothing
-      int activityID = 0;
-      sscanf(strtok(NULL,delim), "%d", &activityID);
-      int exitID = 0;
-      sscanf(strtok(NULL,delim), "%d", &exitID);
-      struct Activity* activity = &game.activities[activityID];
-      activity->exits[activity->n_exits++] = exitID;
-   }
-   fclose(activityExitcsv);
-  
-   // add activities to rooms
-   FILE* roomActivitycsv = fopen("Map/RoomActivities-RoomActivities.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,roomActivitycsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,roomActivitycsv)) {
-      strtok(line,delim); // ID do nothing
-      int roomID = 0;
-      sscanf(strtok(NULL,delim), "%d", &roomID);
-      int activityID = 0;
-      sscanf(strtok(NULL,delim), "%d", &activityID);
-      struct Room* room = &game.rooms[roomID];
-      room->activities[room->n_activities++] = activityID;
-   }
-   fclose(roomActivitycsv);
-
-   // add activities to activities
-   FILE* activityActivitycsv = fopen("Map/ActivityActivities-ActivityActivities.csv", "r");
-   fgets(line,MAX_LINE_LENGTH,activityActivitycsv); // Collumn headers do nothing
-   while(fgets(line,MAX_LINE_LENGTH,activityActivitycsv)) {
-      struct ActivityRoom actRoom;
-      strtok(line,delim); // ID do nothing
-      int activityID1 = 0;
-      sscanf(strtok(NULL,delim), "%d", &activityID1);
-      int activityID2 = 0;
-      sscanf(strtok(NULL,delim), "%d", &actRoom.activity);
-      sscanf(strtok(NULL,delim), "%d", &actRoom.room);
-      struct Activity* activity = &game.activities[activityID1];
-      activity->activities[activity->n_activities++] = actRoom;
-   }
-   fclose(activityActivitycsv);
+   struct Game game = {
+     { // rooms
+        {"Bedroom","A cosy bedroom with a big bed and a dog bed",1,3,{1},{0,1,7}},					// 0
+        {"Hallway","A long hallway with a hard wood floor",3,1,{2,4,6},{2}},						// 1
+        {"Street","Terraced houses go along the steep street",3,0,{7,8,12},{}},						// 2
+        {"Living room","A room with a big sofa. There’s a dog bed on the floor and a tv on the wall",2,3,{1,5},{3,10,18}},	// 3
+        {"Kitchen","Lot’s of food on the sides. There’s two dog bowls on the floor",1,2,{4},{4,5}},			// 4
+        {"Study","Two desks with computers and a big comfy sofa",1,0,{1},{}},						// 5
+        {"Little park","A small park with lots of climbing frames",1,0,{11},{}},					// 6
+        {"Big park","A large park with trees and hills",2,0,{9,10},{}},							// 7
+        {"Forest","A forest with lots of fallen down trees and muddy patches",2,1,{10,11},{15}},			// 8
+        {"Green","An old bowling green",2,1,{9,11},{12}},								// 9
+        {"Armstrong park","A long park with a few different paths through",0,0,{},{}},					// 10
+        {"Jesmond dene","A long park with a river running through it",0,0,{},{}},					// 11
+     }, // rooms
+     0,
+     { // activities
+        {"Dog bed","You sleep for an hour",0,1,{},{0,THIS_ROOM},NOTODO,{0,24}},			// 0
+        {"Big bed","You sleep for an hour",0,1,{},{1,THIS_ROOM},NOTODO,{0,24}},			// 1
+        {"Front door","You bark at the front door",1,0,{3},{},NOTODO,{0,24}},			// 2
+        {"TV","There is no dog on the TV",0,0,{},{},NOTODO,{0,24}},				// 3
+        {"Water bowl","Slurp Slurp Slurp Slurp Slurp",0,0,{},{},1,{0,24}}, 			// 4
+        {"Food bowl","You bark at the empty bowl",0,1,{},{6,THIS_ROOM},NOTODO,{0,24}},		// 5
+        {"Food bowl","Chomp Chomp Chomp Chomp Chomp",0,1,{},{5,THIS_ROOM},0,{0,24}},		// 6
+        {"Laundry basket","You find a sock",0,1,{},{8,HELD_ACTIVITY},2,{0,24}},			// 7
+        {"Put down socks","You put down the socks",0,1,{},{9,THIS_ROOM},NOTODO,{0,24}},		// 8
+        {"Socks","You pick up the socks",0,1,{},{8,HELD_ACTIVITY},NOTODO,{0,24}},		// 9
+        {"Ball","You pick up the ball",0,1,{},{11,HELD_ACTIVITY},NOTODO,{0,24}},		// 10
+        {"Put down ball","You drop the ball",0,1,{},{10,THIS_ROOM},NOTODO,{0,24}},		// 11
+        {"Long grass","Smells like wee",0,1,{},{13,THIS_ROOM},NOTODO,{0,24}},			// 12
+	{"Wee on long grass","It's your park now",0,1,{},{14,THIS_ROOM},3,{0,24}},		// 13
+        {"Long grass","Smells like your wee",0,1,{},{14,THIS_ROOM},NOTODO,{0,24}},		// 14
+        {"Bushes","You find a football",0,1,{},{16,HELD_ACTIVITY},NOTODO,{0,24}},		//15
+        {"Drop football","You leave the footbll for your dad to pick up",0,1,{},{17,6},NOTODO,{0,24}},//16
+        {"Chase football","Your dad kicks the football and you chase it",0,1,{},{16,HELD_ACTIVITY},4,{0,24}},//17
+        {"TV","There is a dog on the TV, they are acting.",0,0,{},{},NOTODO,{8,9}},  
+     }, // activities
+     0,
+     { // exits
+        {"Wake up","You wake up in a big bed",0,{0,24}},			// 0
+        {"Go to hallway","You walk into the hallway",1,{0,24}},			// 1
+        {"Go to bedroom","You walk into the bedroom",0,{0,24}},			// 2
+        {"Exit house","You put on your lead and walk into the street",2,{0,24}},//3
+        {"Go to living room","You walk into the living room",3,{0,24}},		// 4
+        {"Go to the kitchen","You walk into the kitchen",4,{0,24}},		// 5
+        {"Go to the study","You walk into the study",5,{0,24}},			// 6
+        {"Walk to little park","You walk into the little park",6,{0,24}},	// 7
+        {"Walk to big park","You walk to the big park",7,{0,24}},		// 8
+        {"Go to the forest","You run into the forest",8,{0,24}},		// 9
+        {"Go to the green","You run to the green",9,{0,24}},			// 10
+        {"Go to the street","You walk back to the street",2,{0,24}},		// 11
+        {"Go home","You go back home",1,{0,24}},				// 12
+     }, // exits
+     0,
+     { // todos
+	{"Breakfast",0},	// 0
+        {"Slurps",0},		// 1
+        {"Steal socks",0},	// 2
+        {"Claim park",0},	// 3
+        {"Play football",0},	// 4
+     }, // todos
+     5,
+     {}, // messages
+     0,
+     0,
+     NO_HELD_ACTIVITY,
+     7,
+     0
+   };
    
    return game;
 }
