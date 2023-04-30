@@ -541,6 +541,8 @@ function postRun() {
   }
   initiateGame = Module.cwrap('initiateGame', null, []);
   initiateGame();
+  showRoom = Module.cwrap('showRoom', null, ['number']);
+  showRoom("1");
   callRuntimeCallbacks(__ATPOSTRUN__);
 }
 
@@ -3705,6 +3707,11 @@ function dbg(text) {
   }
   }
 
+  function _js_getScreenWidth()  {
+        var w = Module.textAreaWidth();
+        return w;
+      }
+
   function getCFunc(ident) {
       var func = Module['_' + ident]; // closure exported function
       assert(func, 'Cannot call unknown function ' + ident + ', make sure it is exported');
@@ -3981,7 +3988,8 @@ var wasmImports = {
   "fd_close": _fd_close,
   "fd_read": _fd_read,
   "fd_seek": _fd_seek,
-  "fd_write": _fd_write
+  "fd_write": _fd_write,
+  "js_getScreenWidth": _js_getScreenWidth
 };
 var asm = createWasm();
 /** @type {function(...*):?} */

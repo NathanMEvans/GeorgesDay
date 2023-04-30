@@ -19,6 +19,18 @@
 
 struct Game game;
 
+extern int js_getScreenWidth();
+extern int js_getScreenHeight();
+struct winsize getWindowSize() {
+   struct winsize w;
+   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   if (w.ws_col == 0) {
+      w.ws_col = js_getScreenWidth();
+      w.ws_row = js_getScreenHeight();
+   }
+   return w;
+}
+
 void increaseTime(int hours, int minutes) {
    game.minutes += minutes;
    game.hours += hours;
@@ -48,8 +60,8 @@ void borderColumn(int x, int y, int height, char capu[4], char capd[4]) {
 }
 
 void border() {
-   struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   struct winsize w = getWindowSize();
+   
    gotoxy(1,1);
    printf("╔");
    for (int i=2;i<w.ws_col-1;i++) {
@@ -87,8 +99,7 @@ void border() {
 
 void header() {
    clear();
-   struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   struct winsize w = getWindowSize();
 
    gotoxy(1,2);
    if (w.ws_col > 68) {
@@ -126,8 +137,7 @@ int inRange(struct TimeRange timeRange) {
 }
 
 void showOptions(struct Room* room) {
-      struct winsize w;
-      ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+      struct winsize w = getWindowSize();
       int divx = 2*w.ws_col/3;
       
       // clock
@@ -255,8 +265,7 @@ void handleInput(struct Room* room, int inputI) {
 }
 
 void drawTodos() {
-   struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   struct winsize w = getWindowSize();
    int divx = 2*w.ws_col/3;
    gotoxy(w.ws_col-(divx/4)-3,11);
    printf("TODO");  
@@ -327,9 +336,7 @@ void initiateGame() {
    game = generateMap();
    struct Exit* nextExit = &game.exits[0];
    strcpy(game.messages[game.n_messages++], nextExit->description);
-   file = fopen(fname, "w");
-   fwrite(&game, sizeof(struct Game), 1, file);
-   fclose(file);
+   showRoom(0);
 }
 
 
@@ -354,9 +361,6 @@ int main( int argc, char *argv[] )  {
              
                sscanf(input, "%d", &inputI);
                showRoom(inputI);
-               file = fopen(fname, "w");
-               fwrite(&game, sizeof(struct Game), 1, file);
-               fclose(file);
              }
           }
           int inputI;
@@ -365,18 +369,8 @@ int main( int argc, char *argv[] )  {
        } else {
           showRoom(0);
        }
-       file = fopen(fname, "w");
-       fwrite(&game, sizeof(struct Game), 1, file);
-       fclose(file);
     } else {
-      file = fopen(fname, "w");
-      printf("0\n");
-      game = generateMap();
-      struct Exit* nextExit = &game.exits[0];
-      strcpy(game.messages[game.n_messages++], nextExit->description);
-      showRoom(0);
-      fwrite(&game, sizeof(struct Game), 1, file);
-      fclose(file);
+      initiateGame();
    }
    return 0;
 }

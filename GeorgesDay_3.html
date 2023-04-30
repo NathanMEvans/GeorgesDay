@@ -85,8 +85,8 @@
       }
 
       #output {
-        width: 100%;
-        height: 200px;
+        width: 700px;
+        height: 350px;
         margin: 0 auto;
         margin-top: 10px;
         border-left: 0px;
@@ -103,7 +103,7 @@
   </head>
   <body>
    
-    <textarea id="output" rows="8"></textarea>
+    <textarea id="output" rows="50", cols="100"></textarea>
     <form onSubmit="return Module.choiceEntered()">
       <label for="choice">choice:</label><br>
       <input type="text" id="choice" name="choice"><br>
@@ -113,27 +113,58 @@
       var Module = {
         preRun: [],
         postRun: [],
+        textAreaWidth: (function() {
+          w = document.getElementById("output").cols;
+          return w;
+        }),
+        screenBuffer: [...Array(50)].map(e => Array(document.getElementById("output").cols).fill(" ")),
+        cursor: [0,0],
         print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
-            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join('');
             // These replacements are necessary if you render to raw HTML
             //text = text.replace(/&/g, "&amp;");
             //text = text.replace(/</g, "&lt;");
             //text = text.replace(/>/g, "&gt;");
             //text = text.replace('\n', '<br>', 'g');
-            if (element) {
-              element.value += text + "\n";
-              element.scrollTop = element.scrollHeight; // focus on bottom
+            let regex = /\u001b\[\d+;\d+H/;
+            let regex2 = /\u001b\[(\d+);(\d+)H/;
+            let found = text.match(regex2)
+            if (found && found.length > 2) {
+              Module.cursor[0] = parseInt(found[1]);
+              Module.cursor[1] = parseInt(found[2]);
+            }
+            textArray = text.split(regex);
+            for (let text of textArray) {
+             
+              for (let i in text) {
+                Module.screenBuffer[Module.cursor[1]][Module.cursor[0]] = text[i];
+                Module.cursor[0] += 1;
+                if (Module.cursor[0] > Module.textAreaWidth()-1) {
+                  Module.cursor[0] = 0;
+                  Module.cursor[1] += 1;
+                }
+              }
             }
           };
         })(),
         choiceEntered: (function() {
-          var element = document.getElementById("choice");
+          var choice = document.getElementById("choice");
           showRoom = Module.cwrap('showRoom', null, ['number']);
-          showRoom(element.value);
-          element.value = "";
+          showRoom(choice.value);
+          choice.value = "";
+
+          var output = document.getElementById('output');
+          screenText = ""
+          for (let row of Module.screenBuffer) {
+            screenText += row.join("");
+            screenText += "\n";
+          }
+          Module.screenBuffer = [...Array(50)].map(e => Array(Module.textAreaWidth()).fill(" "));
+          Module.cursor = [0,0];
+          output.value = screenText;
           return false;
         }),
         totalDependencies: 0,
