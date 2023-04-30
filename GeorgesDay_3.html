@@ -117,7 +117,7 @@
           w = document.getElementById("output").cols;
           return w;
         }),
-        screenBuffer: [...Array(50)].map(e => Array(document.getElementById("output").cols).fill(" ")),
+        screenBuffer: [...Array(50)].map(e => Array(100).fill(" ")),
         cursor: [0,0],
         print: (function() {
           var element = document.getElementById('output');
@@ -133,8 +133,8 @@
             let regex2 = /\u001b\[(\d+);(\d+)H/;
             let found = text.match(regex2)
             if (found && found.length > 2) {
-              Module.cursor[0] = parseInt(found[1]);
-              Module.cursor[1] = parseInt(found[2]);
+              Module.cursor[1] = parseInt(found[1]);
+              Module.cursor[0] = parseInt(found[2]);
             }
             textArray = text.split(regex);
             for (let text of textArray) {
@@ -142,7 +142,7 @@
               for (let i in text) {
                 Module.screenBuffer[Module.cursor[1]][Module.cursor[0]] = text[i];
                 Module.cursor[0] += 1;
-                if (Module.cursor[0] > Module.textAreaWidth()-1) {
+                if (Module.cursor[0] > 100-1) {
                   Module.cursor[0] = 0;
                   Module.cursor[1] += 1;
                 }
@@ -162,7 +162,7 @@
             screenText += row.join("");
             screenText += "\n";
           }
-          Module.screenBuffer = [...Array(50)].map(e => Array(Module.textAreaWidth()).fill(" "));
+          Module.screenBuffer = [...Array(50)].map(e => Array(100).fill(" "));
           Module.cursor = [0,0];
           output.value = screenText;
           return false;
