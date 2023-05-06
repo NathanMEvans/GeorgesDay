@@ -539,7 +539,7 @@ function postRun() {
       addOnPostRun(Module['postRun'].shift());
     }
   }
-  
+
   callRuntimeCallbacks(__ATPOSTRUN__);
 }
 
