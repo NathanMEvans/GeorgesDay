@@ -6,8 +6,23 @@ struct TimeRange {
    int end;
 };
 
-struct ActivityRoom {
+struct ActivityTime {
    int activity;
+   struct TimeRange time;
+};
+
+struct ExitTime {
+   int exit;
+   struct TimeRange time;
+};
+
+struct ActivityRoom {
+   struct ActivityTime activity;
+   int room;
+};
+
+struct ExitRoom {
+   struct ExitTime exit;
    int room;
 };
 
@@ -16,17 +31,15 @@ struct Activity {
    char description[128];
    int n_exits;
    int n_activities;
-   int exits[10];
+   struct ExitRoom exits[10];
    struct ActivityRoom activities[10];
    int todo;
-   struct TimeRange timeRange;
 };
 
 struct Exit {
    char title[128];
    char description[128];
    int room;
-   struct TimeRange timeRange;
 };
 
 struct Room {
@@ -34,8 +47,8 @@ struct Room {
    char description[128];
    int n_exits;
    int n_activities;
-   int exits[10];
-   int activities[10];
+   struct ExitTime exits[10];
+   struct ActivityTime activities[10];
 };
 
 struct Todo {

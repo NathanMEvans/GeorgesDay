@@ -1,7 +1,7 @@
 #include "GenerateMap.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define NOTODO 255
@@ -9,85 +9,168 @@
 #define HELD_ACTIVITY 254
 #define NO_HELD_ACTIVITY 255
 
-struct Game generateMap() {
-   struct Game game = {
+struct Game generateMap()
+{
+  struct Game game = {
       .rooms = {
-         { // 0
-            .title = "Bedroom",
-            .description = "A cosy bedroom with a big bed and a dog bed",
-            .n_exits = 1,
-            .n_activities = 3,
-            .exits = {1},
-            .activities = {0,1,7}
-         },			
-        {"Hallway","A long hallway with a hard wood floor",3,1,{2,4,6},{2}},						// 1
-        {"Street","Terraced houses go along the steep street",3,0,{7,8,12},{}},						// 2
-        {"Living room","A room with a big sofa. There’s a dog bed on the floor and a tv on the wall",2,3,{1,5},{3,10,18}},	// 3
-        {"Kitchen","Lot’s of food on the sides. There’s two dog bowls on the floor",1,2,{4},{4,5}},			// 4
-        {"Study","Two desks with computers and a big comfy sofa",1,0,{1},{}},						// 5
-        {"Little park","A small park with lots of climbing frames",1,0,{11},{}},					// 6
-        {"Big park","A large park with trees and hills",2,0,{9,10},{}},							// 7
-        {"Forest","A forest with lots of fallen down trees and muddy patches",2,1,{10,11},{15}},			// 8
-        {"Green","An old bowling green",2,1,{9,11},{12}},								// 9
-        {"Armstrong park","A long park with a few different paths through",0,0,{},{}},					// 10
-        {"Jesmond dene","A long park with a river running through it",0,0,{},{}},					// 11
-     }, // rooms
-     0,
-     { // activities
-        {"Dog bed","You sleep for an hour",0,1,{},{0,THIS_ROOM},NOTODO,{0,24}},			// 0
-        {"Big bed","You sleep for an hour",0,1,{},{1,THIS_ROOM},NOTODO,{0,24}},			// 1
-        {"Front door","You bark at the front door",1,0,{3},{},NOTODO,{0,24}},			// 2
-        {"TV","There is no dog on the TV",0,0,{},{},NOTODO,{0,24}},				// 3
-        {"Water bowl","Slurp Slurp Slurp Slurp Slurp",0,0,{},{},1,{0,24}}, 			// 4
-        {"Food bowl","You bark at the empty bowl",0,1,{},{6,THIS_ROOM},NOTODO,{0,24}},		// 5
-        {"Food bowl","Chomp Chomp Chomp Chomp Chomp",0,1,{},{5,THIS_ROOM},0,{0,24}},		// 6
-        {"Laundry basket","You find a sock",0,1,{},{8,HELD_ACTIVITY},2,{0,24}},			// 7
-        {"Put down socks","You put down the socks",0,1,{},{9,THIS_ROOM},NOTODO,{0,24}},		// 8
-        {"Socks","You pick up the socks",0,1,{},{8,HELD_ACTIVITY},NOTODO,{0,24}},		// 9
-        {"Ball","You pick up the ball",0,1,{},{11,HELD_ACTIVITY},NOTODO,{0,24}},		// 10
-        {"Put down ball","You drop the ball",0,1,{},{10,THIS_ROOM},NOTODO,{0,24}},		// 11
-        {"Long grass","Smells like wee",0,1,{},{13,THIS_ROOM},NOTODO,{0,24}},			// 12
-	{"Wee on long grass","It's your park now",0,1,{},{14,THIS_ROOM},3,{0,24}},		// 13
-        {"Long grass","Smells like your wee",0,1,{},{14,THIS_ROOM},NOTODO,{0,24}},		// 14
-        {"Bushes","You find a football",0,1,{},{16,HELD_ACTIVITY},NOTODO,{0,24}},		//15
-        {"Drop football","You leave the footbll for your dad to pick up",0,1,{},{17,6},NOTODO,{0,24}},//16
-        {"Chase football","Your dad kicks the football and you chase it",0,1,{},{16,HELD_ACTIVITY},4,{0,24}},//17
-        {"TV","There is a dog on the TV, they are acting.",0,0,{},{},NOTODO,{8,9}},  
-     }, // activities
-     0,
-     { // exits
-        {"Wake up","You wake up in a big bed",0,{0,24}},			// 0
-        {"Go to hallway","You walk into the hallway",1,{0,24}},			// 1
-        {"Go to bedroom","You walk into the bedroom",0,{0,24}},			// 2
-        {"Exit house","You put on your lead and walk into the street",2,{0,24}},//3
-        {"Go to living room","You walk into the living room",3,{0,24}},		// 4
-        {"Go to the kitchen","You walk into the kitchen",4,{0,24}},		// 5
-        {"Go to the study","You walk into the study",5,{0,24}},			// 6
-        {"Walk to little park","You walk into the little park",6,{0,24}},	// 7
-        {"Walk to big park","You walk to the big park",7,{0,24}},		// 8
-        {"Go to the forest","You run into the forest",8,{0,24}},		// 9
-        {"Go to the green","You run to the green",9,{0,24}},			// 10
-        {"Go to the street","You walk back to the street",2,{0,24}},		// 11
-        {"Go home","You go back home",1,{0,24}},				// 12
-     }, // exits
-     0,
-     { // todos
-	{"Breakfast",0},	// 0
-        {"Slurps",0},		// 1
-        {"Steal socks",0},	// 2
-        {"Claim park",0},	// 3
-        {"Play football",0},	// 4
-     }, // todos
-     5,
-     {}, // messages
-     0,
-     0,
-     NO_HELD_ACTIVITY,
-     7,
-     0
-   };
+          {.title = "Bedroom",
+           .description = "A cosy bedroom with a big bed and a dog bed",
+           .n_exits = 1,
+           .n_activities = 3,
+           .exits = {{.exit = 1, .time = {0, 24}}},
+           .activities = {{.activity = 0, .time = {0, 24}},
+                          {.activity = 1, .time = {0, 24}},
+                          {.activity = 7, .time = {0, 24}}}},
+          {.title = "Hallway",
+           .description = "A long hallway with a hard wood floor",
+           .n_exits = 3,
+           .n_activities = 1,
+           .exits = {{.exit = 2, .time = {0, 24}},
+                     {.exit = 4, .time = {0, 24}},
+                     {.exit = 6, .time = {0, 24}}},
+           .activities = {{.activity = 2, .time = {0, 24}}}},
+          // 1
+          {.title = "Street",
+           .description = "Terraced houses go along the steep street",
+           .n_exits =
+               3,
+           .n_activities = 0,
+           .exits = {{.exit = 7, .time = {0, 24}},
+                     {.exit = 8, .time = {0, 24}},
+                     {.exit = 12, .time = {0, 24}}},
+           .activities = {}},
+          // 2
+          {
+              .title = "Living room",
+              .description = "A room with a big sofa. There’s a dog bed on the floor and a tv on the wall",
+              .n_exits = 2,
+              .n_activities = 4,
+              .exits = {{.exit = 1, .time = {0, 24}},
+                        {.exit = 5, .time = {0, 24}}},
+              .activities = {{.activity = 3, .time = {0, 8}},
+                             {.activity = 3, .time = {9, 24}},
+                             {.activity = 10, .time = {0, 24}},
+                             {.activity = 18, .time = {8, 9}}}},
+          // 3
+          {
+              .title = "Kitchen",
+              .description = "Lot’s of food on the sides. There’s two dog bowls on the floor",
+              .n_exits = 1,
+              .n_activities = 2,
+              .exits = {{.exit = 4, .time = {0, 24}}},
+              .activities = {{.activity = 4, .time = {0, 24}},
+                             {.activity = 5, .time = {0, 24}}}}, // 4
+          {.title = "Study",
+           .description =
+               "Two desks with computers and a big comfy sofa",
+           .n_exits =
+               1,
+           .n_activities = 0,
+           .exits = {{.exit = 1, .time = {0, 24}}},
+           .activities = {}}, // 5
+          {.title = "Little park",
+           .description = "A small park with lots of climbing frames",
+           .n_exits =
+               1,
+           .n_activities = 0,
+           .exits = {{.exit = 11, .time = {0, 24}}},
+           .activities = {}}, // 6
+          {
+              .title = "Big park",
+              .description = "A large park with trees and hills",
+              .n_exits = 2,
+              .n_activities = 0,
+              .exits = {{.exit = 9, .time = {0, 24}},
+                        {.exit = 10, .time = {0, 24}}},
+              .activities = {}}, // 7
+          {
+              .title = "Forest",
+              .description = "A forest with lots of fallen down trees and muddy patches",
+              .n_exits = 2,
+              .n_activities = 1,
+              .exits = {{.exit = 10, .time = {0, 24}},
+                        {.exit = 11, .time = {0, 24}}},
+              .activities = {{.activity = 15, .time = {0, 24}}}}, // 8
+          {
+              .title = "Green",
+              .description = "An old bowling green",
+              .n_exits =
+                  2,
+              .n_activities = 1,
+              .exits = {{.exit = 9, .time = {0, 24}},
+                        {.exit = 11, .time = {0, 24}}},
+              .activities = {{.activity = 12, .time = {0, 24}}}}, // 9
+          {.title = "Armstrong park",
+           .description = "A long park with a few different paths through",
+           .n_exits =
+               0,
+           .n_activities = 0,
+           .exits = {},
+           .activities = {}}, // 10
+          {.title = "Jesmond dene",
+           .description = "A long park with a river running through it",
+           .n_exits =
+               0,
+           .n_activities = 0,
+           .exits = {},
+           .activities = {}}, // 11
+      },                      // rooms
+      .n_rooms = 0,
+      .activities = {
+          // activities
+          {.title = "Dog bed", .description = "You sleep for an hour", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 0, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                               // 0
+          {.title = "Big bed", .description = "You sleep for an hour", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 1, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                               // 1
+          {.title = "Front door", .description = "You bark at the front door", .n_exits = 1, .n_activities = 0, .exits = {{.exit = {.exit = 3, .time = {0, 24}}, THIS_ROOM}}, .activities = {}, .todo = NOTODO},                                       // 2
+          {.title = "TV", .description = "There is no dog on the TV", .n_exits = 0, .n_activities = 0, .exits = {}, .activities = {}, .todo = NOTODO},                                                                                                 // 3
+          {.title = "Water bowl", .description = "Slurp Slurp Slurp Slurp Slurp", .n_exits = 0, .n_activities = 0, .exits = {}, .activities = {}, .todo = 1},                                                                                          // 4
+          {.title = "Food bowl", .description = "You bark at the empty bowl", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 6, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                        // 5
+          {.title = "Food bowl", .description = "Chomp Chomp Chomp Chomp Chomp", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 5, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = 0},                          // 6
+          {.title = "Laundry basket", .description = "You find a sock", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 8, .time = {0, 24}}, .room = HELD_ACTIVITY}}, .todo = 2},                               // 7
+          {.title = "Put down socks", .description = "You put down the socks", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 9, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                       // 8
+          {.title = "Socks", .description = "You pick up the socks", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 8, .time = {0, 24}}, .room = HELD_ACTIVITY}}, .todo = NOTODO},                             // 9
+          {.title = "Ball", .description = "You pick up the ball", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 11, .time = {0, 24}}, .room = HELD_ACTIVITY}}, .todo = NOTODO},                              // 10
+          {.title = "Put down ball", .description = "You drop the ball", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 10, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                            // 11
+          {.title = "Long grass", .description = "Smells like wee", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 13, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                                 // 12
+          {.title = "Wee on long grass", .description = "It's your park now", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 14, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = 3},                            // 13
+          {.title = "Long grass", .description = "Smells like your wee", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 14, .time = {0, 24}}, .room = THIS_ROOM}}, .todo = NOTODO},                            // 14
+          {.title = "Bushes", .description = "You find a football", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 16, .time = {0, 24}}, .room = HELD_ACTIVITY}}, .todo = NOTODO},                             // 15
+          {.title = "Drop football", .description = "You leave the footbll for your dad to pick up", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 17, .time = {0, 24}}, .room = 6}}, .todo = NOTODO},        // 16
+          {.title = "Chase football", .description = "Your dad kicks the football and you chase it", .n_exits = 0, .n_activities = 1, .exits = {}, .activities = {{.activity = {.activity = 16, .time = {0, 24}}, .room = HELD_ACTIVITY}}, .todo = 4}, // 17
+          {.title = "TV", .description = "There is a dog on the TV, they are acting.", .n_exits = 0, .n_activities = 0, .exits = {}, .activities = {}, .todo = NOTODO},                                                                                // 18
+      },                                                                                                                                                                                                                                               // activities
+      .n_activities = 0,
+      .exits = {
+          // exits
+          {.title = "Wake up", .description = "You wake up in a big bed", .room = 0},                         // 0
+          {.title = "Go to hallway", .description = "You walk into the hallway", .room = 1},                  // 1
+          {.title = "Go to bedroom", .description = "You walk into the bedroom", .room = 0},                  // 2
+          {.title = "Exit house", .description = "You put on your lead and walk into the street", .room = 2}, // 3
+          {.title = "Go to living room", .description = "You walk into the living room", .room = 3},          // 4
+          {.title = "Go to the kitchen", .description = "You walk into the kitchen", .room = 4},              // 5
+          {.title = "Go to the study", .description = "You walk into the study", .room = 5},                  // 6
+          {.title = "Walk to little park", .description = "You walk into the little park", .room = 6},        // 7
+          {.title = "Walk to big park", .description = "You walk to the big park", .room = 7},                // 8
+          {.title = "Go to the forest", .description = "You run into the forest", .room = 8},                 // 9
+          {.title = "Go to the green", .description = "You run to the green", .room = 9},                     // 10
+          {.title = "Go to the street", .description = "You walk back to the street", .room = 2},             // 11
+          {.title = "Go home", .description = "You go back home", .room = 1},                                 // 12
+      },                                                                                                      // exits
+      .n_exits = 0,
+      .todos = {
+          // todos
+          {"Breakfast", 0},     // 0
+          {"Slurps", 0},        // 1
+          {"Steal socks", 0},   // 2
+          {"Claim park", 0},    // 3
+          {"Play football", 0}, // 4
+      },                        // todos
+      .n_todos = 5,
+      .messages = {}, // messages
+      .n_messages = 0,
+      .currentRoom = 0,
+      .heldActivity = NO_HELD_ACTIVITY,
+      .hours = 7,
+      .minutes = 0};
 
-
-   
-   return game;
+  return game;
 }

@@ -176,8 +176,9 @@ void showOptions(struct Room* room) {
       gotoxy(1,20);
       int count = 1;
       for (int i = 0; i < room->n_activities; i++) {
-         struct Activity* activity = &game.activities[room->activities[i]];
-         if (inRange(activity->timeRange)) {
+         struct ActivityTime* activityTime = &room->activities[i];
+         struct Activity* activity = &game.activities[activityTime->activity];
+         if (inRange(activityTime->time)) {
 #ifdef DEBUG
             printf("%5d activity: %s exits: %d activities: %d \n",count++, activity->title, activity->n_exits, activity->n_activities);
 #else
@@ -186,8 +187,9 @@ void showOptions(struct Room* room) {
          }
       }
       for (int i = 0; i < room->n_exits; i++) {
-         struct Exit* exit = &game.exits[room->exits[i]];
-         if (inRange(exit->timeRange)) {
+         struct ExitTime* exitTime = &room->exits[i];
+         struct Exit* exit = &game.exits[exitTime->exit];
+         if (inRange(exitTime->time)) {
 #ifdef DEBUG
             printf("%5d exit: %s\n",count++,exit->title);
 #else
@@ -216,7 +218,7 @@ void selectActivity(struct Activity* activity) {
                 game.heldActivity = NO_HELD_ACTIVITY;
                 selectActivity(oldHeldActivity); 
             }
-            game.heldActivity = actRoom.activity;
+            game.heldActivity = actRoom.activity.activity;
          } else {
             struct Room* room = &game.rooms[actRoom.room];
             room->activities[room->n_activities++] = actRoom.activity;
@@ -227,7 +229,14 @@ void selectActivity(struct Activity* activity) {
      struct Room* room = &game.rooms[game.currentRoom];
      
      for  (int i = 0; i < activity->n_exits; i++) {
-         room->exits[room->n_exits++] = activity->exits[i];
+         struct ExitRoom exitRoom = activity->exits[i];
+         if (exitRoom.room == THIS_ROOM) {
+            struct Room* room = &game.rooms[game.currentRoom];
+            room->exits[room->n_exits++] = exitRoom.exit;
+         } else {
+            struct Room* room = &game.rooms[exitRoom.room];
+            room->exits[room->n_exits++] = exitRoom.exit;
+         }
      }
      if (activity->todo != NOTODO) {
         game.todos[activity->todo].complete = 1;
@@ -241,8 +250,9 @@ void handleInput(struct Room* room, int inputI) {
 	int offset = 0;
         for (int i=1;i<=room->n_activities+room->n_exits+1;i++) {
            if (i <= room->n_activities) {
-              struct Activity* activity = &game.activities[room->activities[i-1]];
-              if (!inRange(activity->timeRange)) {
+              struct ActivityTime* activityTime = &room->activities[i-1];
+              struct Activity* activity = &game.activities[activityTime->activity];
+              if (!inRange(activityTime->time)) {
                  inputI++;
               } else if (i==inputI) {
                  selectActivity(activity);
@@ -250,8 +260,9 @@ void handleInput(struct Room* room, int inputI) {
                  room->activities[inputI-1] = room->activities[--room->n_activities];
               }
            } else if (i <= room->n_activities + room->n_exits) {
-             struct Exit* selectedExit = &game.exits[room->exits[i-1-room->n_activities]];
-             if (!inRange(selectedExit->timeRange)) {
+              struct ExitTime* exitTime = &room->exits[i-1-room->n_activities];
+              struct Exit* selectedExit = &game.exits[exitTime->exit];
+             if (!inRange(exitTime->time)) {
                  inputI++;
              } else if (i==inputI) {
                  game.currentRoom = selectedExit->room;
