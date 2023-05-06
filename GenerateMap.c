@@ -11,8 +11,15 @@
 
 struct Game generateMap() {
    struct Game game = {
-     { // rooms
-        {"Bedroom","A cosy bedroom with a big bed and a dog bed",1,3,{1},{0,1,7}},					// 0
+      .rooms = {
+         { // 0
+            .title = "Bedroom",
+            .description = "A cosy bedroom with a big bed and a dog bed",
+            .n_exits = 1,
+            .n_activities = 3,
+            .exits = {1},
+            .activities = {0,1,7}
+         },			
         {"Hallway","A long hallway with a hard wood floor",3,1,{2,4,6},{2}},						// 1
         {"Street","Terraced houses go along the steep street",3,0,{7,8,12},{}},						// 2
         {"Living room","A room with a big sofa. There’s a dog bed on the floor and a tv on the wall",2,3,{1,5},{3,10,18}},	// 3
@@ -79,6 +86,8 @@ struct Game generateMap() {
      7,
      0
    };
+
+
    
    return game;
 }
