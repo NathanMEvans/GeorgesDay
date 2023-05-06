@@ -19,6 +19,22 @@
 
 struct Game game;
 
+#ifdef JS
+extern int js_getScreenWidth();
+extern int js_getScreenHeight();
+struct winsize getWindowSize() {
+   struct winsize w;
+   w.ws_col = js_getScreenWidth();
+   w.ws_row = js_getScreenHeight();
+   return w;
+}
+#else
+struct winsize getWindowSize() {
+   struct winsize w;
+   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   return w;
+}
+#endif
 void increaseTime(int hours, int minutes) {
    game.minutes += minutes;
    game.hours += hours;
@@ -48,8 +64,8 @@ void borderColumn(int x, int y, int height, char capu[4], char capd[4]) {
 }
 
 void border() {
-   struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   struct winsize w = getWindowSize();
+   
    gotoxy(1,1);
    printf("╔");
    for (int i=2;i<w.ws_col-1;i++) {
@@ -87,8 +103,7 @@ void border() {
 
 void header() {
    clear();
-   struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   struct winsize w = getWindowSize();
 
    gotoxy(1,2);
    if (w.ws_col > 68) {
@@ -126,8 +141,7 @@ int inRange(struct TimeRange timeRange) {
 }
 
 void showOptions(struct Room* room) {
-      struct winsize w;
-      ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+      struct winsize w = getWindowSize();
       int divx = 2*w.ws_col/3;
       
       // clock
@@ -255,8 +269,7 @@ void handleInput(struct Room* room, int inputI) {
 }
 
 void drawTodos() {
-   struct winsize w;
-   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+   struct winsize w = getWindowSize();
    int divx = 2*w.ws_col/3;
    gotoxy(w.ws_col-(divx/4)-3,11);
    printf("TODO");  
@@ -272,7 +285,25 @@ void drawTodos() {
  
 }
 
+void loadGame() {
+   char* fname = "georges.day";
+   FILE *file;
+   if((file = fopen(fname, "r"))) {
+     fread(&game, sizeof(struct Game), 1, file);
+     fclose(file);
+   }
+}
+
+void saveGame() {
+   char* fname = "georges.day";
+   FILE *file;
+   file = fopen(fname, "w");
+   fwrite(&game, sizeof(struct Game), 1, file);
+   fclose(file);
+}
+
 void showRoom(int inputI) {
+  loadGame();
   struct Room* room = &game.rooms[game.currentRoom];
   if (inputI > 0) {
     handleInput(room, inputI);
@@ -285,6 +316,7 @@ void showRoom(int inputI) {
   border();
   gotoxy(5,30);
   printf("What do you want to do next?: ");
+  saveGame();
 }
 
 static void sig_handler(int sig)
@@ -301,6 +333,16 @@ static void sig_handler(int sig)
   }
 
 } // sig_handler
+
+void initiateGame() {
+   char* fname = "georges.day";
+   FILE *file;
+   game = generateMap();
+   struct Exit* nextExit = &game.exits[0];
+   strcpy(game.messages[game.n_messages++], nextExit->description);
+   showRoom(0);
+}
+
 
 
 int main( int argc, char *argv[] )  {
@@ -323,9 +365,6 @@ int main( int argc, char *argv[] )  {
              
                sscanf(input, "%d", &inputI);
                showRoom(inputI);
-               file = fopen(fname, "w");
-               fwrite(&game, sizeof(struct Game), 1, file);
-               fclose(file);
              }
           }
           int inputI;
@@ -334,18 +373,8 @@ int main( int argc, char *argv[] )  {
        } else {
           showRoom(0);
        }
-       file = fopen(fname, "w");
-       fwrite(&game, sizeof(struct Game), 1, file);
-       fclose(file);
     } else {
-      file = fopen(fname, "w");
-      printf("0\n");
-      game = generateMap();
-      struct Exit* nextExit = &game.exits[0];
-      strcpy(game.messages[game.n_messages++], nextExit->description);
-      showRoom(0);
-      fwrite(&game, sizeof(struct Game), 1, file);
-      fclose(file);
+      initiateGame();
    }
    return 0;
 }

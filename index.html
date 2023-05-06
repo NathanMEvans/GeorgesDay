@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <style>
+      body {
+        font-family: arial;
+        margin: 0;
+        padding: none;
+      }
+
+      #output {
+        /*width: 100ch;
+        height: 46em;*/
+        margin: 0 auto;
+        margin-top: 0px;
+        border-left: 0px;
+        border-right: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        display: block;
+        background-color: black;
+        color: white;
+        font-family: 'Lucida Console', monospace;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+   
+    <textarea id="output" rows="40", cols="100"></textarea>
+    
+    <script type='text/javascript'>
+      var Module = {
+        preRun: [],
+        postRun: [(function() {
+          initiateGame = Module.cwrap('initiateGame', null, []);
+          initiateGame();
+          var output = document.getElementById('output');
+          screenText = ""
+          for (let row of Module.screenBuffer) {
+            screenText += row.join("");
+            screenText += "\n";
+          }
+          Module.screenBuffer = [...Array(document.getElementById("output").rows)].map(e => Array(document.getElementById("output").cols).fill(" "));
+          Module.cursor = [0,0];
+          output.value = screenText;
+          output.focus();
+          output.setSelectionRange(2965,2965);
+        })],
+        textAreaWidth: (function() {
+          w = document.getElementById("output").cols;
+          return w;
+        }),
+        textAreaHeight: (function() {
+          h = document.getElementById("output").rows;
+          return h;
+        }),
+        screenBuffer: [...Array(document.getElementById("output").rows)].map(e => Array(document.getElementById("output").cols).fill(" ")),
+        cursor: [0,0],
+        choice: "",
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            let regexGoTo = /^\u001b\[(\d+);(\d+)H/;
+            let regexClear = /^\u001b\[H\u001b\[J/;
+
+              let i = 0;
+              while (i < text.length) {
+                let foundClear = text.slice(i).match(regexClear)
+                if (foundClear && foundClear.length > 0) {
+                  i = i+foundClear[0].length
+                }
+                let foundGoTo = text.slice(i).match(regexGoTo)
+                if (foundGoTo && foundGoTo.length > 2) {
+                  Module.cursor[1] = parseInt(foundGoTo[1])-1;
+                  Module.cursor[0] = parseInt(foundGoTo[2])-1;
+                  i = i+foundGoTo[0].length
+                }
+                
+                Module.screenBuffer[Module.cursor[1]][Module.cursor[0]] = text[i];
+                Module.cursor[0] += 1;
+                if (Module.cursor[0] > document.getElementById("output").cols-1) {
+                  Module.cursor[0] = 0;
+                  Module.cursor[1] += 1;
+                }
+                i++;
+              }
+              Module.cursor[0] = 0;
+              Module.cursor[1] += 1;
+            //}
+          };
+        })(),
+        choiceEntered: (function() {
+          showRoom = Module.cwrap('showRoom', null, ['number']);
+          showRoom(Module.choice);
+          Module.choice = "";
+
+          var output = document.getElementById('output');
+          screenText = ""
+          for (let row of Module.screenBuffer) {
+            screenText += row.join("");
+            screenText += "\n";
+          }
+          Module.screenBuffer = [...Array(document.getElementById("output").rows)].map(e => Array(document.getElementById("output").cols).fill(" "));
+          Module.cursor = [0,0];
+          output.value = screenText;
+          output.scrollTop = 0;
+          output.focus();
+          output.setSelectionRange(2965,2965);
+          return false;
+        }),
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+        }
+      };
+      document.getElementById('output').addEventListener("keydown", function onPress(event) {
+        if (event.key === "Enter") {
+          Module.choiceEntered();
+        } else {
+          let regexDigit = /^\d$/;
+          if (event.key.match(regexDigit)) {
+            Module.choice = event.key;
+            output = document.getElementById('output');
+            arrayText = output.value.split("");
+            arrayText[2964] = event.key;
+            output.value = arrayText.join("");
+            output.focus();
+            output.setSelectionRange(2965,2965);
+          }
+        }
+        event.preventDefault();
+        //return false;
+      });
+    </script>
+    <script async type="text/javascript" src="GeorgesDay.js"></script>
+  </body>
+</html>
+
+
