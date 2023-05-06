@@ -34,6 +34,7 @@ struct Activity {
    struct ExitRoom exits[10];
    struct ActivityRoom activities[10];
    int todo;
+   int drop;
 };
 
 struct Exit {

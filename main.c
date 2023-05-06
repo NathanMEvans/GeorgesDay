@@ -207,6 +207,11 @@ void showOptions(struct Room* room) {
 }
 
 void selectActivity(struct Activity* activity) {
+    if (activity->drop && game.heldActivity != NO_HELD_ACTIVITY) {
+      struct Activity* oldHeldActivity = &game.activities[game.heldActivity];
+      game.heldActivity = NO_HELD_ACTIVITY;
+      selectActivity(oldHeldActivity); 
+   }
     for  (int i = 0; i < activity->n_activities; i++) {
         struct ActivityRoom actRoom = activity->activities[i];
         if (actRoom.room == THIS_ROOM) {
