@@ -239,8 +239,6 @@ void selectActivity(struct Activity *activity)
     }
   }
   strcpy(game.messages[game.n_messages++], activity->description);
-  // Exits currently placed in this room - might update this same as activities
-  struct Room *room = &game.rooms[game.currentRoom];
 
   for (int i = 0; i < activity->n_exits; i++) {
     struct ExitRoom exitRoom = activity->exits[i];
@@ -283,6 +281,7 @@ void handleInput(struct Room *room, int inputI)
           inputI++;
         } else if (i == inputI) {
           game.currentRoom = selectedExit->room;
+          increaseTime(0, 5);
           strcpy(game.messages[game.n_messages++], selectedExit->description);
         }
       } else if (i == room->n_activities + room->n_exits + 1) {

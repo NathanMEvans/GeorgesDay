@@ -41,25 +41,37 @@ struct Game generateMap()
           {.title = "Street", // 2
            .description = "Terraced houses go along the steep street",
            .n_exits = 3,
-           .n_activities = 0,
-           .exits = {{.exit = 7, .time = {0, 24}}, {.exit = 8, .time = {0, 24}}, {.exit = 12, .time = {0, 24}}},
-           .activities = {}},
+           .n_activities = 2,
+           .exits = {
+               {.exit = 7, .time = {11, 14}}, // little park
+               {.exit = 8, .time = {0, 24}},  // big park
+               {.exit = 12, .time = {0, 24}}  // home
+           },
+           .activities = {
+               {.activity = 26, .time = {0, 11}},  // little park closed
+               {.activity = 26, .time = {14, 24}}, // little park closed
+           }},
           {.title = "Living room", // 3
            .description = "A room with a big sofa. There’s a dog bed on the floor and a tv on the wall",
            .n_exits = 2,
            .n_activities = 4,
            .exits = {{.exit = 1, .time = {0, 24}}, {.exit = 5, .time = {0, 24}}},
-           .activities = {{.activity = 3, .time = {0, 8}}, {.activity = 3, .time = {9, 24}}, {.activity = 10, .time = {0, 24}}, {.activity = 18, .time = {8, 9}}}}, // 3
-          {.title = "Kitchen",                                                                                                                                      // 4
+           .activities = {
+               {.activity = 3, .time = {0, 19}},  // tv no dog
+               {.activity = 3, .time = {20, 24}}, // tv no dog
+               {.activity = 10, .time = {0, 24}}, // ball
+               {.activity = 18, .time = {19, 20}} // tv dog
+           }},
+          {.title = "Kitchen", // 4
            .description = "Lot’s of food on the sides. There’s two dog bowls on the floor",
            .n_exits = 1,
            .n_activities = 4,
            .exits = {{.exit = 4, .time = {0, 24}}},
            .activities = {
-               {.activity = 4, .time = {0, 12}}, // water bowl morning
+               {.activity = 4, .time = {0, 12}},   // water bowl morning
                {.activity = 23, .time = {12, 18}}, // water bowl day
                {.activity = 24, .time = {18, 24}}, // water bowl evening
-               {.activity = 5, .time = {0, 24}}  // food bowl
+               {.activity = 5, .time = {0, 24}}    // food bowl
            }},
           {.title = "Study", // 5
            .description = "Two desks with computers and a big comfy sofa",
@@ -361,7 +373,7 @@ struct Game generateMap()
            .keep = 0,
            .minutesTaken = 5,
            .drop = 1},
-            {.title = "Water bowl", // 24
+          {.title = "Water bowl", // 25
            .description = "Slurp Slurp Slurp Slurp Slurp",
            .n_exits = 0,
            .n_activities = 0,
@@ -371,6 +383,17 @@ struct Game generateMap()
            .keep = 0,
            .minutesTaken = 5,
            .drop = 1},
+          {.title = "Walk to little park", // 26
+           .description = "Not now, we'll play some football at lunch",
+           .n_exits = 0,
+           .n_activities = 0,
+           .exits = {},
+           .activities = {},
+           .todo = NOTODO,
+           .keep = 1,
+           .minutesTaken = 0,
+           .drop = 0},
+
       }, // activities
       .n_activities = 0,
       .exits = {
