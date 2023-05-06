@@ -37,6 +37,7 @@ struct winsize getWindowSize()
   return w;
 }
 #endif
+
 void increaseTime(int hours, int minutes)
 {
   game.minutes += minutes;
@@ -214,6 +215,7 @@ void showOptions(struct Room *room)
 
 void selectActivity(struct Activity *activity)
 {
+  increaseTime(0, activity->minutesTaken);
   if (activity->drop && game.heldActivity != NO_HELD_ACTIVITY) {
     struct Activity *oldHeldActivity = &game.activities[game.heldActivity];
     game.heldActivity = NO_HELD_ACTIVITY;
@@ -336,7 +338,6 @@ void showRoom(int inputI)
   struct Room *room = &game.rooms[game.currentRoom];
   if (inputI > 0) {
     handleInput(room, inputI);
-    increaseTime(0, 10);
   }
   room = &game.rooms[game.currentRoom];
   header();

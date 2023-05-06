@@ -40,8 +40,9 @@ struct Activity
   struct ExitRoom exits[10];
   struct ActivityRoom activities[10];
   int todo;
-  int drop;
   int keep;
+  int minutesTaken;
+  int drop;
 };
 
 struct Exit
