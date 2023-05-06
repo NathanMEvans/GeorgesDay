@@ -262,7 +262,9 @@ void handleInput(struct Room* room, int inputI) {
               } else if (i==inputI) {
                  selectActivity(activity);
                  // Remove activity from array
-                 room->activities[inputI-1] = room->activities[--room->n_activities];
+                 if (!activity->keep) {
+                  room->activities[inputI-1] = room->activities[--room->n_activities];
+                 }
               }
            } else if (i <= room->n_activities + room->n_exits) {
               struct ExitTime* exitTime = &room->exits[i-1-room->n_activities];
