@@ -344,7 +344,7 @@ void showRoom(int inputI)
   drawTodos();
   border();
   gotoxy(5, 30);
-  printf("What do you want to do next?: ");
+  printf("What do you want to do next?: \n");
   saveGame();
 }
 

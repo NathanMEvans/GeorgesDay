@@ -41,7 +41,7 @@ struct Game generateMap()
           {.title = "Street", // 2
            .description = "Terraced houses go along the steep street",
            .n_exits = 3,
-           .n_activities = 2,
+           .n_activities = 3,
            .exits = {
                {.exit = 7, .time = {11, 14}}, // little park
                {.exit = 8, .time = {0, 24}},  // big park
@@ -50,6 +50,7 @@ struct Game generateMap()
            .activities = {
                {.activity = 26, .time = {0, 11}},  // little park closed
                {.activity = 26, .time = {14, 24}}, // little park closed
+               {.activity = 29, .time = {0, 24}},  // look for sticks, ok
            }},
           {.title = "Living room", // 3
            .description = "A room with a big sofa. There’s a dog bed on the floor and a tv on the wall",
@@ -73,8 +74,8 @@ struct Game generateMap()
                {.activity = 4, .time = {0, 12}},   // water bowl morning
                {.activity = 23, .time = {12, 18}}, // water bowl day
                {.activity = 24, .time = {18, 24}}, // water bowl evening
-               {.activity = 5, .time = {0, 24}}    // food bowl
-               {.activity = 27, .time = {0, 24}}    // back door
+               {.activity = 5, .time = {0, 24}},   // food bowl
+               {.activity = 27, .time = {0, 24}}   // back door
            }},
           {.title = "Study", // 5
            .description = "Two desks with computers and a big comfy sofa",
@@ -85,39 +86,62 @@ struct Game generateMap()
           {.title = "Little park", // 6
            .description = "A small park with lots of climbing frames",
            .n_exits = 1,
-           .n_activities = 0,
+           .n_activities = 1,
            .exits = {{.exit = 11, .time = {0, 24}}},
-           .activities = {}},
+           .activities = {
+               {.activity = 33, .time = {0, 24}}, // look for sticks, great
+           }},
           {.title = "Big park", // 7
            .description = "A large park with trees and hills",
            .n_exits = 2,
-           .n_activities = 0,
+           .n_activities = 1,
            .exits = {{.exit = 9, .time = {0, 24}}, {.exit = 10, .time = {0, 24}}},
-           .activities = {}},
+           .activities = {
+               {.activity = 33, .time = {0, 24}}, // look for sticks, great
+           }},
           {.title = "Forest", // 8
            .description = "A forest with lots of fallen down trees and muddy patches",
            .n_exits = 2,
-           .n_activities = 1,
+           .n_activities = 2,
            .exits = {{.exit = 10, .time = {0, 24}}, {.exit = 11, .time = {0, 24}}},
-           .activities = {{.activity = 15, .time = {0, 24}}}},
+           .activities = {
+               {.activity = 15, .time = {0, 24}}, // bushes
+               {.activity = 34, .time = {0, 24}}, // look for sticks, best
+           }},
           {.title = "Green", // 9
            .description = "An old bowling green",
-           .n_exits = 2,
-           .n_activities = 1,
-           .exits = {{.exit = 9, .time = {0, 24}}, {.exit = 11, .time = {0, 24}}},
-           .activities = {{.activity = 12, .time = {0, 24}}}},
+           .n_exits = 3,
+           .n_activities = 2,
+           .exits = {
+               {.exit = 9, .time = {0, 24}}, {.exit = 11, .time = {0, 24}}, {.exit = 13, .time = {0, 24}} // Armstrong park
+           },
+           .activities = {
+               {.activity = 12, .time = {0, 24}}, // long grass
+               {.activity = 33, .time = {0, 24}}, // look for sticks, great
+           }},
           {.title = "Armstrong park", // 10
            .description = "A long park with a few different paths through",
-           .n_exits = 0,
-           .n_activities = 0,
-           .exits = {},
-           .activities = {}},
-          {.title = "Jesmond dene", // 11
+           .n_exits = 2,
+           .n_activities = 1,
+           .exits = {
+               {.exit = 14, .time = {0, 24}}, // Jesmond Dene
+               {.exit = 16, .time = {0, 24}}  // Green
+           },
+           .activities = {
+               {.activity = 32, .time = {0, 24}}, // look for sticks, good
+           }},
+          {.title = "Jesmond Dene", // 11
            .description = "A long park with a river running through it",
-           .n_exits = 0,
-           .n_activities = 0,
-           .exits = {},
-           .activities = {}},
+           .n_exits = 1,
+           .n_activities = 3,
+           .exits = {
+               {.exit = 15, .time = {0, 24}}, // Armstrong park
+           },
+           .activities = {
+               {.activity = 35, .time = {0, 24}}, // Goats
+               {.activity = 36, .time = {0, 24}}, // River
+               {.activity = 37, .time = {0, 24}}, // Poodle
+           }},
       }, // rooms
       .n_rooms = 0,
       .activities = {
@@ -404,17 +428,107 @@ struct Game generateMap()
            .activities = {{.activity = {.activity = 28, .time = {7, 12}}, .room = THIS_ROOM}},
            .todo = NOTODO,
            .keep = 0,
-           .minutesTaken = 0,
+           .minutesTaken = 5,
            .drop = 0},
           {.title = "Sniff the fresh morning air", // 28
            .description = "Smells real good",
-           .n_exits = 1,
-           .n_activities = 1,
+           .n_exits = 0,
+           .n_activities = 0,
            .exits = {},
            .activities = {},
            .todo = NOTODO,
            .keep = 1,
-           .minutesTaken = 0,
+           .minutesTaken = 10,
+           .drop = 0},
+          {.title = "Look for sticks", // 29
+           .description = "You found an ok stick",
+           .n_exits = 0,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 30, .time = {0, 24}}, .room = HELD_ACTIVITY}},
+           .todo = NOTODO,
+           .keep = 0,
+           .minutesTaken = 10,
+           .drop = 1},
+          {.title = "Drop stick", // 30
+           .description = "You put down the stick",
+           .n_exits = 0,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 31, .time = {0, 24}}, .room = THIS_ROOM}},
+           .todo = NOTODO,
+           .keep = 0,
+           .minutesTaken = 5,
+           .drop = 0},
+          {.title = "Stick", // 31
+           .description = "You pick up the stick",
+           .n_exits = 0,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 30, .time = {0, 24}}, .room = HELD_ACTIVITY}},
+           .todo = NOTODO,
+           .keep = 0,
+           .minutesTaken = 5,
+           .drop = 0},
+          {.title = "Look for sticks", // 32
+           .description = "You found a good stick",
+           .n_exits = 0,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 30, .time = {0, 24}}, .room = HELD_ACTIVITY}},
+           .todo = NOTODO,
+           .keep = 0,
+           .minutesTaken = 10,
+           .drop = 1},
+          {.title = "Look for sticks", // 33
+           .description = "You found a great stick",
+           .n_exits = 0,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 30, .time = {0, 24}}, .room = HELD_ACTIVITY}},
+           .todo = NOTODO,
+           .keep = 0,
+           .minutesTaken = 10,
+           .drop = 1},
+          {.title = "Look for sticks", // 34
+           .description = "You found the best stick",
+           .n_exits = 0,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 30, .time = {0, 24}}, .room = HELD_ACTIVITY}},
+           .todo = 9,
+           .keep = 0,
+           .minutesTaken = 10,
+           .drop = 1},
+          {.title = "Go see the goats", // 35
+           .description = "There's some weird looking dogs",
+           .n_exits = 0,
+           .n_activities = 0,
+           .exits = {},
+           .activities = {},
+           .todo = NOTODO,
+           .keep = 1,
+           .minutesTaken = 10,
+           .drop = 0},
+          {.title = "Swim in the river", // 36
+           .description = "Splish splash",
+           .n_exits = 0,
+           .n_activities = 0,
+           .exits = {},
+           .activities = {},
+           .todo = NOTODO,
+           .keep = 1,
+           .minutesTaken = 10,
+           .drop = 0},
+          {.title = "Look for other dogs", // 37
+           .description = "You find a big poodle",
+           .n_exits = 0,
+           .n_activities = 0,
+           .exits = {},
+           .activities = {},
+           .todo = NOTODO,
+           .keep = 1,
+           .minutesTaken = 10,
            .drop = 0},
 
       }, // activities
@@ -460,21 +574,34 @@ struct Game generateMap()
           {.title = "Go home", // 12
            .description = "You go back home",
            .room = 1},
+          {.title = "Cross the road", // 13
+           .description = "You go across the road to Armstrong park",
+           .room = 10},
+          {.title = "Cross the bridge", // 14
+           .description = "You go across the bridge into Jesmond Dene",
+           .room = 11},
+          {.title = "Cross the bridge", // 15
+           .description = "You go across the bridge into Armstrong park",
+           .room = 10},
+          {.title = "Cross the road", // 16
+           .description = "You cross the road back to big park",
+           .room = 7},
       }, // exits
       .n_exits = 0,
       .todos = {
           // todos
-          {"Breakfast", 0},      // 0
-          {"Lunch", 0},          // 1
-          {"Dinner", 0},         // 2
-          {"Tea", 0},            // 3
-          {"Morning slurps", 0}, // 4
-          {"Evening slurps", 0}, // 5
-          {"Steal socks", 0},    // 6
-          {"Claim park", 0},     // 7
-          {"Play football", 0},  // 8
-      },                         // todos
-      .n_todos = 9,
+          {"Breakfast", 0},       // 0
+          {"Lunch", 0},           // 1
+          {"Dinner", 0},          // 2
+          {"Tea", 0},             // 3
+          {"Morning slurps", 0},  // 4
+          {"Evening slurps", 0},  // 5
+          {"Steal socks", 0},     // 6
+          {"Claim park", 0},      // 7
+          {"Play football", 0},   // 8
+          {"Find best stick", 0}, // 9
+      },                          // todos
+      .n_todos = 10,
       .messages = {}, // messages
       .n_messages = 0,
       .currentRoom = 0,
