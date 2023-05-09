@@ -38,6 +38,16 @@ struct winsize getWindowSize()
 }
 #endif
 
+void addMessage(char description[128]) {
+  if (game.n_messages < 4) {
+    strcpy(game.messages[game.n_messages++], description);
+  } else {
+    memmove(&game.messages[0], &game.messages[1], (3)*128*sizeof(char));
+    strcpy(game.messages[3], description);
+    game.n_messages++;
+  }
+}
+
 void increaseTime(int hours, int minutes)
 {
   game.minutes += minutes;
@@ -174,10 +184,10 @@ void showOptions(struct Room *room)
   }
   gotoxy(1, 15);
   for (int i = 0; i < 4; i++) {
-    if (game.n_messages - 4 + i < 0) {
-      continue;
+    if (game.n_messages <= i) {
+      break;
     }
-    char *message = game.messages[game.n_messages - 4 + i];
+    char *message = game.messages[i];
     printf("%4s%s\n", "", message);
   }
   gotoxy(1, 20);
@@ -238,7 +248,7 @@ void selectActivity(struct Activity *activity)
       room->activities[room->n_activities++] = actRoom.activity;
     }
   }
-  strcpy(game.messages[game.n_messages++], activity->description);
+  addMessage(activity->description);
 
   for (int i = 0; i < activity->n_exits; i++) {
     struct ExitRoom exitRoom = activity->exits[i];
@@ -282,7 +292,7 @@ void handleInput(struct Room *room, int inputI)
         } else if (i == inputI) {
           game.currentRoom = selectedExit->room;
           increaseTime(0, 5);
-          strcpy(game.messages[game.n_messages++], selectedExit->description);
+          addMessage(selectedExit->description);
         }
       } else if (i == room->n_activities + room->n_exits + 1) {
         if (i == inputI && game.heldActivity != NO_HELD_ACTIVITY) {
@@ -369,7 +379,7 @@ void initiateGame()
   FILE *file;
   game = generateMap();
   struct Exit *nextExit = &game.exits[0];
-  strcpy(game.messages[game.n_messages++], nextExit->description);
+  addMessage(nextExit->description);
   showRoom(0);
 }
 

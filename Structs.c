@@ -67,7 +67,6 @@ struct Todo
   char title[128];
   int complete;
 };
-
 struct Game
 {
   struct Room rooms[256];
@@ -78,7 +77,7 @@ struct Game
   int n_exits;
   struct Todo todos[256];
   int n_todos;
-  char messages[128][128];
+  char messages[4][128];
   int n_messages;
   int currentRoom;
   int heldActivity;
