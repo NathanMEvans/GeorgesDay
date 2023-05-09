@@ -40,11 +40,13 @@ struct winsize getWindowSize()
 
 void addMessage(char description[128]) {
   if (game.n_messages < 4) {
+    // add to the array like normal increasing n_messages
     strcpy(game.messages[game.n_messages++], description);
   } else {
+    // move the last 3 messages up one step
     memmove(&game.messages[0], &game.messages[1], (3)*128*sizeof(char));
+    // add to the end of the array
     strcpy(game.messages[3], description);
-    game.n_messages++;
   }
 }
 
