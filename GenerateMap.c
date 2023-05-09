@@ -66,12 +66,15 @@ struct Game generateMap()
            .description = "Lot’s of food on the sides. There’s two dog bowls on the floor",
            .n_exits = 1,
            .n_activities = 4,
-           .exits = {{.exit = 4, .time = {0, 24}}},
+           .exits = {
+               {.exit = 4, .time = {0, 24}} // living room
+           },
            .activities = {
                {.activity = 4, .time = {0, 12}},   // water bowl morning
                {.activity = 23, .time = {12, 18}}, // water bowl day
                {.activity = 24, .time = {18, 24}}, // water bowl evening
                {.activity = 5, .time = {0, 24}}    // food bowl
+               {.activity = 27, .time = {0, 24}}    // back door
            }},
           {.title = "Study", // 5
            .description = "Two desks with computers and a big comfy sofa",
@@ -121,7 +124,7 @@ struct Game generateMap()
           {.title = "Dog bed", // 0
            .description = "You sleep for an hour",
            .n_exits = 0,
-           .n_activities = 1,
+           .n_activities = 0,
            .exits = {},
            .activities = {},
            .todo = NOTODO,
@@ -387,6 +390,26 @@ struct Game generateMap()
            .description = "Not now, we'll play some football at lunch",
            .n_exits = 0,
            .n_activities = 0,
+           .exits = {},
+           .activities = {},
+           .todo = NOTODO,
+           .keep = 1,
+           .minutesTaken = 0,
+           .drop = 0},
+          {.title = "Back door", // 27
+           .description = "You whine for the back door to be open",
+           .n_exits = 1,
+           .n_activities = 1,
+           .exits = {},
+           .activities = {{.activity = {.activity = 28, .time = {7, 12}}, .room = THIS_ROOM}},
+           .todo = NOTODO,
+           .keep = 0,
+           .minutesTaken = 0,
+           .drop = 0},
+          {.title = "Sniff the fresh morning air", // 28
+           .description = "Smells real good",
+           .n_exits = 1,
+           .n_activities = 1,
            .exits = {},
            .activities = {},
            .todo = NOTODO,
